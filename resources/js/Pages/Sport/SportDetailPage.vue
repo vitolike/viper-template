@@ -67,20 +67,6 @@ export default {
             initFlowbite();
         })
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAgFeM38rpp2FtyRcniuTSwInt5i_LkrEw",
-            authDomain: "footballapi-77676.firebaseapp.com",
-            databaseURL: "https://footballapi-77676-default-rtdb.firebaseio.com",
-            projectId: "footballapi-77676",
-            storageBucket: "footballapi-77676.appspot.com",
-            messagingSenderId: "415922178428",
-            appId: "1:415922178428:web:fdf7714d8b118df1447cf9",
-            measurementId: "G-MV8LR0P2L9"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
         return {
             router,
             database

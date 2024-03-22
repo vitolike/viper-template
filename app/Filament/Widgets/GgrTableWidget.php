@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\GGRGamesFiver;
+use App\Models\GgrGamesWorldSlot;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 class GgrTableWidget extends BaseWidget
 {
 
-    protected static ?string $heading = 'GGR Fivers';
+    protected static ?string $heading = 'GGR World Slot';
 
     protected static ?int $navigationSort = -1;
 
@@ -27,7 +28,7 @@ class GgrTableWidget extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(GGRGamesFiver::query())
+            ->query(GgrGamesWorldSlot::query())
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')

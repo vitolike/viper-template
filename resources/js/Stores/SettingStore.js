@@ -6,7 +6,6 @@ import HttpApi from "@/Services/HttpApi.js";
 
 export const useSettingStore = defineStore("settingData", () => {
     const setting = ref(JSON.parse(localStorage.getItem('setting')));
-    
     /**
      * Set Setting
      * @param settingValue

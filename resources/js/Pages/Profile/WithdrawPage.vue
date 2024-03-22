@@ -1,6 +1,6 @@
 <template>
     <BaseLayout>
-        <div class="md:w-5/6 2xl:w-5/6 mx-auto p-4 mt-20">
+        <div class="md:w-4/6 2xl:w-4/6 mx-auto p-4 mt-20">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="col-span-1 hidden md:block">
                     <WalletSideMenu/>
@@ -38,7 +38,7 @@
                                 <div class="dark:text-gray-400 mb-3 mt-4">
                                     <div class="flex justify-between text-sm">
                                         <p>Valor ({{ setting.min_withdrawal }} ~ {{ setting.max_withdrawal }})</p>
-                                        <p>Saldo: {{ state.currencyFormat(parseFloat(wallet.balance), wallet.currency) }}</p>
+                                        <p>Saldo: {{ state.currencyFormat(parseFloat(wallet.balance_withdrawal), wallet.currency) }}</p>
                                     </div>
                                     <div class="flex bg-white dark:bg-gray-900">
                                         <input type="text"
@@ -66,7 +66,7 @@
                                         </div>
                                     </div>
                                     <div class="flex justify-between mt-2 text-sm">
-                                        <p>{{ $t('Available') }}: {{ state.currencyFormat(parseFloat(wallet.balance), wallet.currency) }} {{ wallet.currency }}</p>
+                                        <p>{{ $t('Available') }}: {{ state.currencyFormat(parseFloat(wallet.balance_withdrawal), wallet.currency) }} {{ wallet.currency }}</p>
                                         <p>{{ $t('Balance Rollback') }}: {{ state.currencyFormat(parseFloat(wallet.balance_bonus), wallet.currency) }} {{ wallet.currency }}</p>
                                     </div>
                                 </div>
@@ -143,7 +143,7 @@
                                 <div class="dark:text-gray-400 mb-3">
                                     <div class="flex justify-between mb-3">
                                         <p>Valor ({{ setting.min_withdrawal }} ~ {{ setting.max_withdrawal }})</p>
-                                        <p>Saldo: {{ state.currencyFormat(parseFloat(wallet.balance), wallet.currency) }}</p>
+                                        <p>Saldo: {{ state.currencyFormat(parseFloat(wallet.balance_withdrawal), wallet.currency) }}</p>
                                     </div>
                                     <div class="flex bg-white dark:bg-gray-900">
                                         <input type="text"
@@ -171,7 +171,7 @@
                                         </div>
                                     </div>
                                     <div class="flex justify-between mt-2">
-                                        <p>{{ $t('Available') }}: {{ state.currencyFormat(parseFloat(wallet.balance), wallet.currency) }} {{ wallet.currency }}</p>
+                                        <p>{{ $t('Available') }}: {{ state.currencyFormat(parseFloat(wallet.balance_withdrawal), wallet.currency) }} {{ wallet.currency }}</p>
                                         <p>{{ $t('Balance Rollback') }}: {{ state.currencyFormat(parseFloat(wallet.balance_bonus), wallet.currency) }} {{ wallet.currency }}</p>
                                     </div>
                                 </div>
@@ -263,7 +263,7 @@ export default {
             this.withdraw.amount = this.setting.max_withdrawal;
         },
         setPercentAmount: function(percent) {
-            this.withdraw.amount = ( percent / 100 ) * this.wallet.balance;
+            this.withdraw.amount = ( percent / 100 ) * this.wallet.balance_withdrawal;
         },
         getWallet: function() {
             const _this = this;

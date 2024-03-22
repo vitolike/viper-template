@@ -31,8 +31,10 @@ export const useAuthStore = defineStore("auth", () => {
      * @param userValue
      */
     function setUser(userValue) {
-        localStorage.setItem('user', JSON.stringify(userValue));
-        user.value = userValue;
+        if(userValue != null) {
+            localStorage.setItem('user', JSON.stringify(userValue));
+            user.value = userValue;
+        }
     }
 
     /**

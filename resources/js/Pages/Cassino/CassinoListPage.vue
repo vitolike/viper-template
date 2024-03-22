@@ -2,11 +2,11 @@
     <BaseLayout>
         <LoadingComponent :isLoading="isLoading">
             <div class="text-center">
-                <span>Aguarde...</span>
+                <span>Carregando os jogos</span>
             </div>
         </LoadingComponent>
 
-        <div v-if="!isLoading" class="md:w-5/6 2xl:w-5/6 mx-auto">
+        <div v-if="!isLoading" class="md:w-4/6 2xl:w-4/6 mx-auto">
             <div class="px-4 py-5">
                 <HeaderComponent>
                     <template #header>

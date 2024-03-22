@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\Profile\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Gateway\SuitPayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,11 +15,6 @@ use App\Http\Controllers\Gateway\SuitPayController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-Route::post('suitpay/qrcode-pix', [SuitPayController::class, 'getQRCodePix']);
-Route::post('suitpay/consult-status-transaction', [SuitPayController::class, 'consultStatusTransactionPix']);
-Route::get('suitpay/withdrawal/{id}', [SuitPayController::class, 'withdrawalFromModal']);
-
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -66,6 +60,7 @@ Route::prefix('categories')
     });
 
 include_once(__DIR__ . '/groups/api/games/index.php');
+include_once(__DIR__ . '/groups/api/gateways/suitpay.php');
 
 Route::prefix('search')
     ->group(function ()

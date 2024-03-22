@@ -19,11 +19,15 @@ class VerifyCsrfToken extends Middleware
         'webhooks/*',
         'salsa/*',
         'fivers/*',
-        'worldslot/*',
         'bspay/*',
         'gold_api',
+        'gold_api/*',
         'kagaming/*',
         'vibra/*',
         'cron/*',
+        'venix_api',
+        'venix_api/*',
+        'ever/*',
+        'ever',
     ];
 }

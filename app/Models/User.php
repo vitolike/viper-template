@@ -88,7 +88,7 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
      */
     public function likes(): HasMany
     {
-        return $this->hasMany(GameLike::class);
+        return $this->hasMany(Like::class);
     }
 
     /**

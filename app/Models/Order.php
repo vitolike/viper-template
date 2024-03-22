@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Helpers\Core as Helper;
 
 class Order extends Model
 {
@@ -38,6 +40,36 @@ class Order extends Model
         'round_id',
         'status'
     ];
+
+    /**
+     * Get the user's first name.
+     */
+    protected function type(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => Helper::getTypeOrder($value),
+        );
+    }
+
+    /**
+     * Get the user's first name.
+     */
+    // protected function typeMoney(): Attribute
+    // {
+    //     return Attribute::make(
+    //         get: fn (?string $value) => Helper::getTypeTransactionOrder($value),
+    //     );
+    // }
+
+    /**
+     * Get the user's first name.
+     */
+    protected function providers(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => Helper::getDistribution()[$value] ?? 'Sem Provedor',
+        );
+    }
 
     /**
      * @return BelongsTo

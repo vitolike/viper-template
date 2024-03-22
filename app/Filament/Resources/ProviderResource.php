@@ -3,15 +3,15 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProviderResource\Pages;
-use App\Filament\Resources\ProviderResource\RelationManagers;
 use App\Models\Provider;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Helpers\Core as Helper;
+use Illuminate\Database\Eloquent\Model;
 
 class ProviderResource extends Resource
 {
@@ -23,6 +23,15 @@ class ProviderResource extends Resource
 
     protected static ?string $modelLabel = 'Todos os Provedores';
 
+    /**
+     * @dev @victormsalatiel
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -31,10 +40,17 @@ class ProviderResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('code')
                         ->label('Código')
+                        ->placeholder('Digite o Código')
                         ->maxLength(50),
                     Forms\Components\TextInput::make('name')
+                        ->placeholder('Digite o Nome')
                         ->label('Nome')
                         ->maxLength(50),
+                    Forms\Components\Select::make('distribution')
+                        ->label('Distribuição')
+                        ->placeholder('Selecione a distribuição')
+                        ->required()
+                        ->options(\Helper::getDistribution()),
                     Forms\Components\TextInput::make('rtp')
                         ->label('RTP')
                         ->numeric()
@@ -61,6 +77,9 @@ class ProviderResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('distribution')
+                    ->label('Distribuição')
+                    ->searchable(),
                 Tables\Columns\IconColumn::make('status')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('rtp')
@@ -82,7 +101,11 @@ class ProviderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('distribution')
+                    ->label('Distribuição')
+                    ->options(Helper::getDistribution())
+                    ->attribute('distribution')
+                ,
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

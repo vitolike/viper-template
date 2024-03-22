@@ -15,6 +15,7 @@ const http_axios = axios.create({
 
 http_axios.interceptors.request.use((request) => {
     const userStore = useAuthStore()
+
     if(userStore.getToken()) {
         request.headers.Authorization = 'Bearer ' + userStore.getToken()
     }

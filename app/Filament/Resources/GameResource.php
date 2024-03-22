@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class GameResource extends Resource
@@ -25,6 +26,15 @@ class GameResource extends Resource
     protected static ?string $navigationLabel = 'Todos os Jogos';
 
     protected static ?string $modelLabel = 'Todos os Jogos';
+
+    /**
+     * @dev @victormsalatiel
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 
     /**
      * @param Form $form
@@ -84,10 +94,12 @@ class GameResource extends Resource
                             Forms\Components\TextInput::make('game_code')
                                 ->placeholder('Digite o código do jogo')
                                 ->label('Código do Jogo')
+                                ->required()
                                 ->maxLength(191),
                             Forms\Components\TextInput::make('game_type')
                                 ->placeholder('Digite o tipo de jogo')
                                 ->label('Tipo do Jogo')
+                                ->required()
                                 ->maxLength(191),
                         ])->columns(3),
                         Forms\Components\FileUpload::make('cover')
@@ -132,6 +144,8 @@ class GameResource extends Resource
                             ->required(),
                         Forms\Components\Toggle::make('is_featured')
                             ->label('Destaques'),
+                        Forms\Components\Toggle::make('show_home')
+                            ->label('Mostrar na Home'),
                         Forms\Components\Toggle::make('status')
                             ->label('Status')
                             ->helperText('Ative ou desative o jogo')
@@ -172,11 +186,19 @@ class GameResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('game_id')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label('Game ID')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('game_name')
                     ->label('Nome')
                     ->searchable(),
+                Tables\Columns\ToggleColumn::make('show_home')
+                    ->afterStateUpdated(function ($record, $state) {
+                        if($state == 1) {
+                            $record->update(['status' => 1]);
+                        }
+                    })
+                    ->label('Exibir na Home'),
                 Tables\Columns\ToggleColumn::make('is_featured')
                     ->label('Destaques'),
                 Tables\Columns\TextColumn::make('game_code')
@@ -184,6 +206,7 @@ class GameResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('game_type')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label('Tipo')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('description')

@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class VipResource extends Resource
@@ -25,6 +26,15 @@ class VipResource extends Resource
     protected static ?string $modelLabel = 'Vip';
 
     protected static ?string $slug = 'vip';
+
+    /**
+     * @dev @victormsalatiel
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 
     public static function form(Form $form): Form
     {

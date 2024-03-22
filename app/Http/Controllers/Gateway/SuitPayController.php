@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Gateway;
 
 use App\Http\Controllers\Controller;
 use App\Models\SuitPayPayment;
+use App\Models\Wallet;
 use App\Models\Withdrawal;
 use App\Traits\Gateways\SuitpayTrait;
 use Filament\Notifications\Notification;
@@ -108,5 +109,35 @@ class SuitPayController extends Controller
                 }
             }
         }
+    }
+
+    /**
+     * Cancel Withdrawal
+     * @param $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function cancelWithdrawalFromModal($id)
+    {
+        $withdrawal = Withdrawal::find($id);
+        if(!empty($withdrawal)) {
+            $wallet = Wallet::where('user_id', $withdrawal->user_id)
+                ->where('currency', $withdrawal->currency)
+                ->first();
+
+            if(!empty($wallet)) {
+                $wallet->increment('balance_withdrawal', $withdrawal->amount);
+
+                $withdrawal->update(['status' => 2]);
+                Notification::make()
+                    ->title('Saque cancelado')
+                    ->body('Saque cancelado com sucesso')
+                    ->success()
+                    ->send();
+
+                return back();
+            }
+            return back();
+        }
+        return back();
     }
 }

@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DepositResource extends Resource
@@ -29,6 +30,15 @@ class DepositResource extends Resource
     protected static ?string $slug = 'todos-depositos';
 
     protected static ?int $navigationSort = 2;
+
+    /**
+     * @dev @victormsalatiel
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 
     /**
      * @return string|null
@@ -59,7 +69,6 @@ class DepositResource extends Resource
                     Forms\Components\Select::make('user_id')
                         ->label('Usuários')
                         ->placeholder('Selecione um usuário')
-                        ->relationship(name: 'users', titleAttribute: 'name')
                         ->options(
                             fn($get) => User::query()
                                 ->pluck('name', 'id')

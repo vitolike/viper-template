@@ -85,7 +85,7 @@
             if(this.isCasinoPlayPage) {
                 this.processInterval = setInterval(async  () => {
                     await this.getWallet(); // Substitua 'seuMetodo' pelo nome do seu método
-                }, 10000);
+                }, 5000);
             }
 
             await this.getWallet(); // Substitua 'seuMetodo' pelo nome do seu método

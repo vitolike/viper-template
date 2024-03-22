@@ -25,7 +25,17 @@
                 <p>{{ $t('Pagination') }}</p>
             </div>
 
-           
+<!--            <button-->
+<!--                :aria-current="slotProps.computed.currentPage ? 'page' : null"-->
+<!--                v-for="(page, key) in slotProps.computed.pageRange"-->
+<!--                :key="key"-->
+<!--                v-on="slotProps.pageButtonEvents(page)"-->
+<!--                class="dark:bg-gray-800 px-3 py-2"-->
+<!--                :class="slotProps.computed.currentPage === page ? 'border border-green-500' : ''"-->
+<!--            >-->
+<!--                {{ page }}-->
+<!--            </button>-->
+
             <button
                 :disabled="!slotProps.computed.nextPageUrl"
                 v-on="slotProps.nextButtonEvents"

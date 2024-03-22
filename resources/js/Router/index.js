@@ -31,6 +31,8 @@ import AwardsPage from "@/Pages/Home/AwardsPage.vue";
 import EventsPage from "@/Pages/Home/EventsPage.vue";
 import LandingPage from "@/Pages/Landing/LandingPage.vue";
 import CasinoPlayPage from "@/Pages/Cassino/CasinoPlayPage.vue";
+import ForgotPassword from "@/Pages/Auth/ForgotPassword.vue";
+import ResetPassword from "@/Pages/Auth/ResetPassword.vue";
 
 export const routes = [
     {
@@ -42,6 +44,16 @@ export const routes = [
         name: 'login',
         path: '/login',
         component: LoginPage
+    },
+    {
+        name: 'forgotPassword',
+        path: '/forgot-password',
+        component: ForgotPassword
+    },
+    {
+        name: 'resetPassword',
+        path: '/reset-password/:token',
+        component: ResetPassword
     },
     {
         name: 'stripeSuccess',

@@ -1,9 +1,15 @@
 <template>
     <AuthLayout>
-        <div class="my-auto mt-36">
+        <LoadingComponent :isLoading="isLoading">
+            <div class="text-center">
+                <span>{{ $t('Loading') }}</span>
+            </div>
+        </LoadingComponent>
+
+        <div v-if="!isLoading" class="my-auto mt-36">
             <div class="px-4 py-5">
                 <div class="min-h-[calc(100vh-565px)] text-center flex flex-col items-center justify-center">
-                    <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-700 dark:border-gray-700">
+                    <div class="w-full rounded-lg shadow-lg border-none md:mt-0 sm:max-w-md xl:p-0 bg-base">
                         <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                             <h1 class="mb-8 text-3xl text-center">{{ $t('Login') }}</h1>
 
@@ -31,7 +37,7 @@
                                             <i v-if="typeInputPassword === 'text'" class="fa-sharp fa-regular fa-eye-slash"></i>
                                         </button>
                                     </div>
-                                    <a href="" class="text-white text-sm">{{ $t('Forgot password') }}</a>
+                                    <a @click.prevent="$router.push('/forgot-password')" href="" class="text-white text-sm">{{ $t('Forgot password') }}</a>
 
                                     <div class="mt-3 w-full">
                                         <button type="submit" class="ui-button-blue rounded w-full mb-3">
@@ -76,13 +82,14 @@ import {useAuthStore} from "@/Stores/Auth.js";
 import HttpApi from "@/Services/HttpApi.js";
 import AuthLayout from "@/Layouts/AuthLayout.vue";
 import {useRouter} from "vue-router";
+import LoadingComponent from "@/Components/UI/LoadingComponent.vue";
 
 export default {
     props: [],
-    components: { AuthLayout },
+    components: { LoadingComponent, AuthLayout },
     data() {
         return {
-            isLoadingLogin: false,
+            isLoading: false,
             typeInputPassword: 'password',
             isReferral: false,
             loginForm: {
@@ -119,7 +126,7 @@ export default {
         loginSubmit: async function(event) {
             const _this = this;
             const _toast = useToast();
-            _this.isLoadingLogin = true;
+            _this.isLoading = true;
             const authStore = useAuthStore();
 
             await HttpApi.post('auth/login', _this.loginForm)
@@ -138,7 +145,7 @@ export default {
                             _this.router.push({ name: 'home' });
                             _toast.success(_this.$t('You have been authenticated, welcome!'));
 
-                            _this.isLoadingLogin = false;
+                            _this.isLoading = false;
                         }, 1000)
                     });
 
@@ -148,7 +155,7 @@ export default {
                     Object.entries(JSON.parse(error.request.responseText)).forEach(([key, value]) => {
                         _toast.error(`${value}`);
                     });
-                    _this.isLoadingLogin = false;
+                    _this.isLoading = false;
                 });
         },
         togglePassword: function() {

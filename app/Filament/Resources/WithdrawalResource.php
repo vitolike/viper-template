@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class WithdrawalResource extends Resource
 {
@@ -29,6 +30,15 @@ class WithdrawalResource extends Resource
     protected static ?string $slug = 'todos-saques';
 
     protected static ?int $navigationSort = 3;
+
+    /**
+     * @dev @victormsalatiel
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 
     /**
      * @return string[]
@@ -140,6 +150,33 @@ class WithdrawalResource extends Resource
                 //
             ])
             ->actions([
+                Action::make('deny_payment')
+                    ->label('Cancelar')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('danger')
+                    ->visible(fn (Withdrawal $withdrawal): bool => !$withdrawal->status)
+                    ->action(function(Withdrawal $withdrawal) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Cancelar Saque')
+                            ->success()
+                            ->persistent()
+                            ->body('Você está cancelando saque de '. \Helper::amountFormatDecimal($withdrawal->amount))
+                            ->actions([
+                                \Filament\Notifications\Actions\Action::make('view')
+                                    ->label('Confirmar')
+                                    ->button()
+                                    ->url(route('suitpay.cancelwithdrawal', ['id' => $withdrawal->id]))
+                                    ->close(),
+                                \Filament\Notifications\Actions\Action::make('undo')
+                                    ->color('gray')
+                                    ->label('Cancelar')
+                                    ->action(function(Withdrawal $withdrawal) {
+
+                                    })
+                                    ->close(),
+                            ])
+                            ->send();
+                    }),
                 Action::make('approve_payment')
                     ->label('Fazer pagamento')
                     ->icon('heroicon-o-banknotes')
@@ -155,7 +192,7 @@ class WithdrawalResource extends Resource
                                 \Filament\Notifications\Actions\Action::make('view')
                                     ->label('Confirmar')
                                     ->button()
-                                    ->url("../api/suitpay/withdrawal/$withdrawal->id")
+                                    ->url(route('suitpay.withdrawal', ['id' => $withdrawal->id]))
                                     ->close(),
                                 \Filament\Notifications\Actions\Action::make('undo')
                                     ->color('gray')

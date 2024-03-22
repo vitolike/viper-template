@@ -15,6 +15,7 @@ use App\Notifications\NewDepositNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use App\Helpers\Core as Helper;
 
 trait SuitpayTrait
 {
@@ -30,6 +31,7 @@ trait SuitpayTrait
     /**
      * Generate Credentials
      * Metodo para gerar credenciais
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @return void
      */
     private static function generateCredentials()
@@ -45,6 +47,7 @@ trait SuitpayTrait
     /**
      * Request QRCODE
      * Metodo para solicitar uma QRCODE PIX
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @return array
      */
     public static function requestQrcode($request)
@@ -77,7 +80,11 @@ trait SuitpayTrait
                 "document" =>\Helper::soNumero($request->cpf),
                 "phoneNumber" => \Helper::soNumero(auth('api')->user()->phone),
                 "email" => auth('api')->user()->email
-            ]
+            ],
+//            "split" => [
+//                "username" => "usuario",
+//                "percentageSplit" => 10
+//            ]
         ]);
 
         if($response->successful()) {
@@ -101,6 +108,7 @@ trait SuitpayTrait
     /**
      * Consult Status Transaction
      * Consultar o status da transação
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
      *
      * @param $request
      * @return \Illuminate\Http\JsonResponse
@@ -133,6 +141,7 @@ trait SuitpayTrait
 
     /**
      * @param $idTransaction
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @return bool
      */
     public static function finalizePayment($idTransaction) : bool
@@ -143,52 +152,46 @@ trait SuitpayTrait
         if(!empty($transaction)) {
             $user = User::find($transaction->user_id);
 
-            /// verifica se vem de um convite
-            if(!empty($user) && !empty($user->inviter)) {
-                $afiliado =  User::find($user->inviter);
-                if(!empty($afiliado)) {
-
-                }
-            }
-
             $wallet = Wallet::where('user_id', $transaction->user_id)->first();
             if(!empty($wallet)) {
                 $setting = Setting::first();
 
-                /// verifica se é o primeiro deposito
-                $checkTransactions = Transaction::where('user_id', $transaction->user_id)->count();
-                if($checkTransactions <= 1) {
+                /// verifica se é o primeiro deposito, verifica as transações, somente se for transações concluidas
+                $checkTransactions = Transaction::where('user_id', $transaction->user_id)
+                    ->where('status', 1)
+                    ->count();
 
+                if($checkTransactions == 0 || empty($checkTransactions)) {
                     /// pagar o bonus
-                    $bonus = \Helper::porcentagem_xn($setting->initial_bonus, $transaction->price);
+                    $bonus = Helper::porcentagem_xn($setting->initial_bonus, $transaction->price);
                     $wallet->increment('balance_bonus', $bonus);
                     $wallet->update(['balance_bonus_rollover' => $bonus * $setting->rollover]);
-
-                    /// rollover deposito
-                    $wallet->update(['balance_deposit_rollover' => $transaction->price * $setting->rollover_deposit]);
-
-                    /// acumular bonus
-                    \Helper::payBonusVip($wallet, $transaction->price);
                 }
 
-                if($wallet->increment('balance_bonus', $transaction->price)) {
+                /// rollover deposito
+                $wallet->update(['balance_deposit_rollover' => $transaction->price * intval($setting->rollover_deposit)]);
+
+                /// acumular bonus
+                Helper::payBonusVip($wallet, $transaction->price);
+
+                if($wallet->increment('balance', $transaction->price)) {
                     if($transaction->update(['status' => 1])) {
-                        $deposit = Deposit::where('payment_id', $idTransaction)->where('status', 0)->lockForUpdate()->first();
+                        $deposit = Deposit::where('payment_id', $idTransaction)->where('status', 0)->first();
                         if(!empty($deposit)) {
 
                             /// fazer o deposito em cpa
-                            $affHistoryCPA = AffiliateHistory::where('user_id', $transaction->user_id)
+                            $affHistoryCPA = AffiliateHistory::where('user_id', $user->id)
                                 ->where('commission_type', 'cpa')
-                                ->where('deposited', 1)
+                                //->where('deposited', 1)
                                 ->where('status', 0)
                                 ->first();
 
                             if(!empty($affHistoryCPA)) {
 
                                 /// verifcia se já pode receber o cpa
-                                $sponsorCpa = User::find($affHistoryCPA->inviter);
+                                $sponsorCpa = User::find($user->inviter);
                                 if(!empty($sponsorCpa)) {
-                                    if($affHistoryCPA->deposited_amount >= $sponsorCpa->affiliate_baseline) {
+                                    if($affHistoryCPA->deposited_amount >= $sponsorCpa->affiliate_baseline || $deposit->amount >= $sponsorCpa->affiliate_baseline) {
                                         $walletCpa = Wallet::where('user_id', $affHistoryCPA->inviter)->first();
                                         if(!empty($walletCpa)) {
 
@@ -214,8 +217,8 @@ trait SuitpayTrait
                         }
                         return false;
                     }
-                    return false;
                 }
+
                 return false;
             }
             return false;
@@ -226,6 +229,7 @@ trait SuitpayTrait
     /**
      * @param $idTransaction
      * @param $amount
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @return void
      */
     private static function generateDeposit($idTransaction, $amount)
@@ -247,6 +251,7 @@ trait SuitpayTrait
     /**
      * @param $idTransaction
      * @param $amount
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @return void
      */
     private static function generateTransaction($idTransaction, $amount)
@@ -265,6 +270,7 @@ trait SuitpayTrait
 
     /**
      * @param $request
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @return \Illuminate\Http\JsonResponse|void
      */
     public static function pixCashOut(array $array): bool
@@ -296,7 +302,6 @@ trait SuitpayTrait
             }
             return false;
         }
-
         return false;
     }
 }

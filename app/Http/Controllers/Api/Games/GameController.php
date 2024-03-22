@@ -6,17 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\GameFavorite;
 use App\Models\GameLike;
+use App\Models\GamesKey;
+use App\Models\Gateway;
 use App\Models\Provider;
+use App\Models\Wallet;
+use App\Traits\Providers\EvergameTrait;
 use App\Traits\Providers\FiversTrait;
-use App\Traits\Providers\WorldslotTrait;
+use App\Traits\Providers\Games2ApiTrait;
 use App\Traits\Providers\KaGamingTrait;
 use App\Traits\Providers\SalsaGamesTrait;
+use App\Traits\Providers\VeniXTrait;
 use App\Traits\Providers\VibraTrait;
+use App\Traits\Providers\WorldSlotTrait;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    use KaGamingTrait, FiversTrait, WorldslotTrait, VibraTrait, SalsaGamesTrait;
+    use KaGamingTrait, FiversTrait, VibraTrait, SalsaGamesTrait, WorldSlotTrait, Games2ApiTrait, VeniXTrait, EvergameTrait;
 
     /**
      * @dev victormsalatiel
@@ -24,9 +30,10 @@ class GameController extends Controller
      */
     public function index()
     {
-        $providers = Provider::with(['games','games.provider'])
+        $providers = Provider::with(['games', 'games.provider'])
             ->whereHas('games')
             ->orderBy('name', 'desc')
+            ->where('status', 1)
             ->get();
 
         return response()->json(['providers' =>$providers]);
@@ -138,66 +145,96 @@ class GameController extends Controller
     {
         $game = Game::with(['categories', 'provider'])->whereStatus(1)->find($id);
         if(!empty($game)) {
-            $game->increment('views');
+            if(auth('api')->check()) {
+                $wallet = Wallet::where('user_id', auth('api')->id())->first();
+                if($wallet->total_balance > 0) {
+                    $game->increment('views');
 
-            $token = \Helper::MakeToken([
-                'id' => auth('api')->id(),
-                'game' => $game->game_code
-            ]);
+                    $token = \Helper::MakeToken([
+                        'id' => auth('api')->id(),
+                        'game' => $game->game_code
+                    ]);
 
-            switch ($game->distribution) {
-                case 'source':
-                    return response()->json([
-                        'game' => $game,
-                        'gameUrl' => url('/originals/'.$game->game_code.'/index.html?token='.$token),
-                        'token' => $token
-                    ]);
-                case 'salsa':
-                    return response()->json([
-                        'game' => $game,
-                        'gameUrl' => self::playGameSalsa('CHARGED', 'BRL', 'BR', $game->game_id),
-                        'token' => $token
-                    ]);
-                case 'kagaming':
-                    return response()->json([
-                        'game' => $game,
-                        'gameUrl' => self::GameLaunchKaGaming($game->game_server_url, $game->game_code),
-                        'token' => $token
-                    ]);
-                case 'vibra_gaming':
-                    return response()->json([
-                        'game' => $game,
-                        'gameUrl' => self::GenerateGameLaunch($game),
-                        'token' => $token
-                    ]);
-                case 'fivers':
-                    $fiversLaunch = self::GameLaunchFivers($game->provider->code, $game->game_id, 'pt', auth('api')->id());
+                    switch ($game->distribution) {
+                        case 'source':
+                            return response()->json([
+                                'game' => $game,
+                                'gameUrl' => url('/originals/'.$game->game_code.'/index.html?token='.$token),
+                                'token' => $token
+                            ]);
+                        case 'salsa':
+                            return response()->json([
+                                'game' => $game,
+                                'gameUrl' => self::playGameSalsa('CHARGED', 'BRL', 'BR', $game->game_id),
+                                'token' => $token
+                            ]);
+                        case 'kagaming':
+                            return response()->json([
+                                'game' => $game,
+                                'gameUrl' => self::GameLaunchKaGaming($game->game_server_url, $game->game_code),
+                                'token' => $token
+                            ]);
+                        case 'evergame':
+                            $evergameLaunch = self::GameLaunchEvergame($game->provider->code, $game->game_id, 'pt', auth('api')->id());
 
-                    if(isset($fiversLaunch['launch_url'])) {
-                        return response()->json([
-                            'game' => $game,
-                            'gameUrl' => $fiversLaunch['launch_url'],
-                            'token' => $token
-                        ]);
+                            if(isset($evergameLaunch['launchUrl'])) {
+                                return response()->json([
+                                    'game' => $game,
+                                    'gameUrl' => $evergameLaunch['launchUrl'],
+                                    'token' => $token
+                                ]);
+                            }else{
+                                return response()->json($evergameLaunch);
+                            }
+                        case 'vibra_gaming':
+                            return response()->json([
+                                'game' => $game,
+                                'gameUrl' => self::GenerateGameLaunch($game),
+                                'token' => $token
+                            ]);
+                        case 'fivers':
+                            $fiversLaunch = self::GameLaunchFivers($game->provider->code, $game->game_id, 'pt', auth('api')->id());
+
+                            if(isset($fiversLaunch['launch_url'])) {
+                                return response()->json([
+                                    'game' => $game,
+                                    'gameUrl' => $fiversLaunch['launch_url'],
+                                    'token' => $token
+                                ]);
+                            }
+
+                            return response()->json(['error' => $fiversLaunch, 'status' => false ], 400);
+                        case 'games2_api':
+                            $games2ApiLaunch = self::GameLaunchGames2($game->provider->code, $game->game_id, 'pt', auth('api')->id());
+
+                            if(isset($games2ApiLaunch['launch_url'])) {
+                                return response()->json([
+                                    'game' => $game,
+                                    'gameUrl' => $games2ApiLaunch['launch_url'],
+                                    'token' => $token
+                                ]);
+                            }
+
+                            return response()->json(['error' => $games2ApiLaunch, 'status' => false ], 400);
+                        case 'worldslot':
+                            $worldslotLaunch = self::GameLaunchWorldSlot($game->provider->code, $game->game_id, 'pt', auth('api')->id());
+
+                            if(isset($worldslotLaunch['launch_url'])) {
+                                return response()->json([
+                                    'game' => $game,
+                                    'gameUrl' => $worldslotLaunch['launch_url'],
+                                    'token' => $token
+                                ]);
+                            }
+
+                            return response()->json(['error' => $worldslotLaunch, 'status' => false ], 400);
+
                     }
-                case 'worldslot':
-                    $worldslotLaunch = self::GameLaunchWorldslot($game->provider->code, $game->game_id, 'pt', auth('api')->id());
-
-                    if(isset($worldslotLaunch['launch_url'])) {
-                        return response()->json([
-                            'game' => $game,
-                            'gameUrl' => $worldslotLaunch['launch_url'],
-                            'token' => $token
-                        ]);
-                    }
-
-                    return response()->json(['error' => $worldslotLaunch, 'status' => false ], 400);
-
+                }
+                return response()->json(['error' => 'Você precisa ter saldo para jogar', 'status' => false, 'action' => 'deposit' ], 200);
             }
-
-
+            return response()->json(['error' => 'Você precisa tá autenticado para jogar', 'status' => false ], 400);
         }
-
         return response()->json(['error' => '', 'status' => false ], 400);
     }
 
@@ -209,7 +246,6 @@ class GameController extends Controller
     {
         $query = Game::query();
         $query->with(['provider', 'categories']);
-        $query->where('status', 1);
 
         if (!empty($request->provider) && $request->provider != 'all') {
             $query->where('provider_id', $request->provider);
@@ -223,9 +259,14 @@ class GameController extends Controller
 
         if (isset($request->searchTerm) && !empty($request->searchTerm) && strlen($request->searchTerm) > 2) {
             $query->whereLike(['game_code', 'game_name', 'description', 'distribution', 'provider.name'], $request->searchTerm);
+        }else{
+            $query->orderBy('views', 'desc');
         }
 
-        $games = $query->orderBy('views', 'desc')->paginate(12)->appends(request()->query());
+        $games = $query
+            ->where('status', 1)
+            ->paginate(12)->appends(request()->query());
+
         return response()->json(['games' => $games]);
     }
 
@@ -233,10 +274,38 @@ class GameController extends Controller
      * @dev victormsalatiel
      * Update the specified resource in storage.
      */
-    public function webhookFiversMethod(Request $request)
+    public function webhookGoldApiMethod(Request $request)
     {
         return self::WebhooksFivers($request);
     }
+
+    /**
+     * @dev victormsalatiel
+     * Update the specified resource in storage.
+     */
+    public function webhookUserBalanceMethod(Request $request)
+    {
+        return self::GetUserBalanceWorldSlot($request);
+    }
+
+    /**
+     * @dev victormsalatiel
+     * Update the specified resource in storage.
+     */
+    public function webhookGameCallbackMethod(Request $request)
+    {
+        return self::GameCallbackWorldSlot($request);
+    }
+
+    /**
+     * @dev victormsalatiel
+     * Update the specified resource in storage.
+     */
+    public function webhookMoneyCallbackMethod(Request $request)
+    {
+        return self::MoneyCallbackWorldSlot($request);
+    }
+
 
     /**
      * Webhook Vibra Method
@@ -268,23 +337,9 @@ class GameController extends Controller
         return self::webhookSalsa($request);
     }
 
-    /**
-     * @param Request $request
-     * @return null
-     */
-    public function WorldslotUserBalance(Request $request)
+    public function webhookVeniXMethod(Request $request)
     {
-        return self::GetBalanceInfoWorldslot($request);
-    }
-
-    public function WorldslotTransaction(Request $request)
-    {
-        return self::SetTransactionWorldslot($request);
-    }
-
-    public function WorldslotGameStart(Request $request)
-    {
-        return self::SetTransactionWorldslot($request);
+        return self::WebhookVeniX($request);
     }
 
     /**

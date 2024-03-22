@@ -36,6 +36,15 @@ class WalletResource extends Resource
     protected static ?int $navigationSort = 1;
 
     /**
+     * @dev @victormsalatiel
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
+
+    /**
      * @return bool
      */
     public static function canCreate(): bool
@@ -95,10 +104,21 @@ class WalletResource extends Resource
                             ->numeric()
                             ->default(0.00),
                         Forms\Components\TextInput::make('refer_rewards')
+                            ->label('Saldo de Afiliado')
                             ->required()
                             ->numeric()
                             ->default(0.00),
-                        ])->columns(4),
+                        Forms\Components\TextInput::make('balance_demo')
+                            ->label('Saldo Influencer')
+                            ->required()
+                            ->numeric()
+                            ->default(0.00),
+                        Forms\Components\TextInput::make('balance_withdrawal')
+                            ->label('Saldo Saque')
+                            ->required()
+                            ->numeric()
+                            ->default(0.00),
+                        ])->columns(5),
             ]);
     }
 
@@ -144,8 +164,8 @@ class WalletResource extends Resource
             ->filters([
                 Filter::make('created_at')
                     ->form([
-                        DatePicker::make('created_from'),
-                        DatePicker::make('created_until'),
+                        DatePicker::make('created_from')->label('Criado a partir de'),
+                        DatePicker::make('created_until')->label('Criado até'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -162,11 +182,11 @@ class WalletResource extends Resource
                         $indicators = [];
 
                         if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = 'Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                            $indicators['created_from'] = 'Criado a partir de ' . Carbon::parse($data['created_from'])->toFormattedDateString();
                         }
 
                         if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = 'Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                            $indicators['created_until'] = 'Criado até ' . Carbon::parse($data['created_until'])->toFormattedDateString();
                         }
 
                         return $indicators;

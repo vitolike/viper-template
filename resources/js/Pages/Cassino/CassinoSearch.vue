@@ -21,7 +21,7 @@
                     <div class="mb-3">
 
                     </div>
-                    <h1 class="text-2xl font-bold">Pesquise seu jogo favorito</h1>
+                    <h1 class="text-2xl font-bold">A pesquisa requer pelo menos 3 caracteres</h1>
                 </div>
 
                 <div v-else class="flex flex-col">

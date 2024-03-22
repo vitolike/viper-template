@@ -27,6 +27,7 @@ class Provider extends Model
         'name',
         'rtp',
         'status',
+        'distribution',
         'views',
     ];
 
@@ -37,8 +38,9 @@ class Provider extends Model
     public function games(): HasMany
     {
         return $this->hasMany(Game::class, 'provider_id', 'id')
-            ->where('status', 1)
-            ->orderBy('views', 'asc');
+            ->orderBy('views', 'desc')
+            ->where('show_home', 1)
+            ;
     }
 
 }

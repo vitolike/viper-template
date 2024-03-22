@@ -37,13 +37,6 @@ trait MissionTrait
                                         self::checkFinishMission($mission->mission->id, $mission->id);
                                         return true;
                                     }
-                                case 'wordslot':
-                                    /// verifica se é o mesmo provider do jogo
-                                    if($mission->mission->challenge_provider == $game->game_provider_id) {
-                                        $mission->increment('rounds', 1);
-                                        self::checkFinishMission($mission->mission->id, $mission->id);
-                                        return true;
-                                    }
                             }
                         }
 
@@ -57,24 +50,12 @@ trait MissionTrait
                                     self::checkFinishMission($mission->mission->id, $mission->id);
                                     return true;
                                 }
-                            case 'wordslot':
-                                /// verifica se é o mesmo provider do jogo
-                                if($mission->mission->challenge_gameid == $game->game_code) {
-                                    $mission->increment('rounds', 1);
-                                    self::checkFinishMission($mission->mission->id, $mission->id);
-                                    return true;
-                                }
                         }
 
                     } elseif(!empty($mission->mission->challenge_type) && $mission->mission->challenge_type == 'game' && $mission->mission->challenge_total > $mission->rounds) {
                         /// desafio só para jogaar um jogo
                         switch ($provider) {
                             case 'fivers':
-                                /// verifica se é o mesmo provider do jogo
-                                $mission->increment('rounds', 1);
-                                self::checkFinishMission($mission->mission->id, $mission->id);
-                                return true;
-                            case 'wordslot':
                                 /// verifica se é o mesmo provider do jogo
                                 $mission->increment('rounds', 1);
                                 self::checkFinishMission($mission->mission->id, $mission->id);

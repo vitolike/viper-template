@@ -1,6 +1,6 @@
 <template>
     <BaseLayout>
-        <div class="md:w-5/6 2xl:w-5/6 mx-auto p-4 mt-20">
+        <div class="md:w-4/6 2xl:w-4/6 mx-auto p-4 mt-20">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 z-[999999]">
                 <div class="col-span-1 hidden md:block">
                     <WalletSideMenu />

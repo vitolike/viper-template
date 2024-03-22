@@ -89,7 +89,7 @@
                                 <h1 class="text-base">{{ $t('TOTAL REWARD RECEIVED') }}:</h1>
                                 <h2 class="text-yellow-400 font-bold text-2xl">{{ state.currencyFormat(parseFloat(wallet.refer_rewards), wallet.currency) }}</h2>
                             </div>
-                            <button @click.prevent="makewithdrawal" type="button" class="dark:bg-gray-600 py-4 px-6 h-full ml-3 flex items-center justify-center">
+                            <button @click.prevent="opemModalWithdrawal" type="button" class="dark:bg-gray-600 py-4 px-6 h-full ml-3 flex items-center justify-center">
                                 {{ $t('Withdraw') }}
                             </button>
                         </div>
@@ -274,7 +274,7 @@
                     <!-- Modal header -->
                     <div class="flex justify-between p-4 dark:bg-gray-600 rounded-t-lg">
                         <h1>Regras de recompensas por comissão</h1>
-                        <button class="" @click.prevent="toggleCommissionRewards">
+                        <button class="" @click.prevent="opemModalWithdrawal">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -485,7 +485,7 @@ export default {
         toggleReferenceRewards: function(event) {
             this.referenceRewards.toggle();
         },
-        makewithdrawal: function() {
+        opemModalWithdrawal: function() {
             this.withdrawalModal.toggle();
         },
         makeWithdrawal: async function() {

@@ -24,7 +24,7 @@ const app = createApp(App);
 
 app.config.globalProperties.state = {
     platformName() {
-        return 'amasoft';
+        return 'VIPERPRO';
     },
     dateFormatServer(date) {
         const currentDate = new Date(date);
@@ -162,7 +162,10 @@ if(localStorage.getItem('token')) {
         try {
             auth.setIsAuth(true);
             const user = await auth.checkToken();
-            auth.setUser(user);
+            if(user !== undefined) {
+                auth.setUser(user);
+            }
+
             //auth.initializingEcho();
         } catch (e) {
             auth.setIsAuth(false);
@@ -170,4 +173,4 @@ if(localStorage.getItem('token')) {
     })()
 }
 
-app.mount('#amasoft');
+app.mount('#viperpro');

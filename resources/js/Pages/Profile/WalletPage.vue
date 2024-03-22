@@ -1,6 +1,6 @@
 <template>
     <BaseLayout>
-        <div class="md:w-5/6 2xl:w-5/6 mx-auto mt-20">
+        <div class="md:w-4/6 2xl:w-4/6 mx-auto mt-20">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="col-span-1 hidden md:block">
                     <WalletSideMenu />
@@ -9,29 +9,37 @@
                     <div v-if="!isLoadingWallet" class="flex flex-col w-full bg-gray-200 hover:bg-gray-300/20 dark:bg-gray-800/50 p-4 rounded hover:dark:bg-gray-900">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
                             <div class="flex w-full">
-                                <i class="fa-sharp fa-regular fa-dollar-sign text-4xl mr-2"></i>
-                                <div class="leading-4">
+                                <div class="rounded-full ring-2 ring-gray-200 px-4 py-2 text-center flex justify-center items-center">
+                                    <i class="fa-sharp fa-regular fa-dollar-sign text-2xl"></i>
+                                </div>
+                                <div class="leading-4 ml-3">
                                     <span>{{ $t('Total Balance') }}</span>
                                     <h1 class="text-lg font-bold text-yellow-400">{{ state.currencyFormat(parseFloat(wallet.total_balance), wallet.currency) }}</h1>
                                 </div>
                             </div>
                             <div class="flex w-full">
-                                <i class="fa-sharp fa-regular fa-dollar-sign text-4xl mr-2"></i>
-                                <div class="leading-4">
+                                <div class="rounded-full ring-2 ring-gray-200 px-4 py-2 text-center flex justify-center items-center">
+                                    <i class="fa-sharp fa-regular fa-dollar-sign text-2xl"></i>
+                                </div>
+                                <div class="leading-4 ml-3">
                                     <span>{{ $t('Withdrawal Balance') }}</span>
                                     <h1 class="text-lg font-bold text-yellow-400">{{ state.currencyFormat(parseFloat(wallet.balance_withdrawal), wallet.currency) }}</h1>
                                 </div>
                             </div>
                             <div class="flex w-full">
-                                <i class="fa-sharp fa-regular fa-dollar-sign text-4xl mr-2"></i>
-                                <div class="leading-4">
+                                <div class="rounded-full ring-2 ring-gray-200 px-4 py-2 text-center flex justify-center items-center">
+                                    <i class="fa-sharp fa-regular fa-dollar-sign text-2xl"></i>
+                                </div>
+                                <div class="leading-4 ml-3">
                                     <span>{{ $t('Balance Rollover') }}</span>
                                     <h1 class="text-lg font-bold text-yellow-400">{{ state.currencyFormat(parseFloat(wallet.balance), wallet.currency) }}</h1>
                                 </div>
                             </div>
                             <div class="flex w-full">
-                                <i class="fa-sharp fa-regular fa-dollar-sign text-4xl mr-2"></i>
-                                <div class="leading-4">
+                                <div class="rounded-full ring-2 ring-gray-200 px-4 py-2 text-center flex justify-center items-center">
+                                    <i class="fa-sharp fa-regular fa-dollar-sign text-2xl"></i>
+                                </div>
+                                <div class="leading-4 ml-3">
                                     <span>{{ $t('Balance Bonus') }}</span>
                                     <h1 class="text-lg font-bold text-yellow-400">{{ state.currencyFormat(parseFloat(wallet.balance_bonus), wallet.currency) }}</h1>
                                 </div>
@@ -66,7 +74,7 @@
                                    <div class="flex items-center">
                                        <i class="fa-light fa-wallet text-3xl mr-2"></i>
                                        <div class="flex flex-col items-start">
-                                           <p>{{ wallet.symbol }} {{ wallet.balance }}</p>
+                                           <p>{{ wallet.symbol }} {{ wallet.total_balance }}</p>
                                            <p class="text-[12px] dark:text-gray-500">{{ wallet.symbol }} {{ wallet.balance_bonus }}</p>
                                        </div>
                                    </div>

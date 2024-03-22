@@ -1,9 +1,14 @@
 <template>
     <AuthLayout>
-        <div class="my-auto">
+        <LoadingComponent :isLoading="isLoading">
+            <div class="text-center">
+                <span>{{ $t('Loading') }}</span>
+            </div>
+        </LoadingComponent>
+        <div v-if="!isLoading" class="my-auto">
             <div class="px-4 py-5">
                 <div class="min-h-[calc(100vh-565px)] text-center flex flex-col items-center justify-center">
-                    <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-700 dark:border-gray-700">
+                    <div class="w-full bg-white rounded-lg shadow-lg md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-700 dark:border-gray-700">
                         <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                             <h1 class="mb-8 text-3xl text-center">{{ $t('Register') }}</h1>
 
@@ -31,6 +36,19 @@
                                                v-model="registerForm.email"
                                                class="input-group"
                                                :placeholder="$t('Enter email or phone')"
+                                               required
+                                        >
+                                    </div>
+
+                                    <div class="relative mb-3">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                            <i class="fa-light fa-address-card text-success-emphasis"></i>
+                                        </div>
+                                        <input type="text"
+                                               name="cpf"
+                                               v-model="registerForm.cpf"
+                                               class="input-group"
+                                               :placeholder="$t('Enter cpf')"
                                                required
                                         >
                                     </div>
@@ -158,19 +176,21 @@ import AuthLayout from "@/Layouts/AuthLayout.vue";
 import {useRoute, useRouter} from "vue-router";
 import {onMounted, reactive} from "vue";
 import {useSpinStoreData} from "@/Stores/SpinStoreData.js";
+import LoadingComponent from "@/Components/UI/LoadingComponent.vue";
 
 export default {
     props: [],
-    components: { AuthLayout },
+    components: {LoadingComponent, AuthLayout },
     data() {
         return {
-            isLoadingRegister: false,
+            isLoading: false,
             typeInputPassword: 'password',
             isReferral: false,
             registerForm: {
                 name: '',
                 email: '',
                 password: '',
+                cpf: '',
                 password_confirmation: '',
                 reference_code: '',
                 term_a: false,
@@ -242,7 +262,7 @@ export default {
         registerSubmit: async function(event) {
             const _this = this;
             const _toast = useToast();
-            _this.isLoadingRegister = true;
+            _this.isLoading = true;
 
             const authStore = useAuthStore();
             await HttpApi.post('auth/register', _this.registerForm)
@@ -267,15 +287,14 @@ export default {
                         _toast.success(_this.$t('Your account has been created successfully'));
                     }
 
-                    _this.isLoadingRegister = false;
+                    _this.isLoading = false;
                 })
                 .catch(error => {
                     const _this = this;
-                    console.log(error);
                     Object.entries(JSON.parse(error.request.responseText)).forEach(([key, value]) => {
                         _toast.error(`${value}`);
                     });
-                    _this.isLoadingRegister = false;
+                    _this.isLoading = false;
                 });
         },
     },

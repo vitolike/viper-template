@@ -40,6 +40,15 @@ class Settings extends Page implements HasForms
 
     protected static ?string $slug = 'configuracoes';
 
+    /**
+     * @dev @victormsalatiel
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
+
     public ?array $data = [];
     public Setting $setting;
 
@@ -72,6 +81,7 @@ class Settings extends Page implements HasForms
                             ->label('Descrição')
                             ->maxLength(191),
                     ])->columns(2),
+
                 Section::make('Logos')
                     ->schema([
                         FileUpload::make('software_favicon')
@@ -87,6 +97,7 @@ class Settings extends Page implements HasForms
                             ->placeholder('Carregue uma logo escura')
                             ->image(),
                     ])->columns(3),
+
                 Section::make('Background')
                     ->schema([
                         FileUpload::make('software_background')
@@ -95,6 +106,7 @@ class Settings extends Page implements HasForms
                             ->image()
                         ->columnSpanFull(),
                     ]),
+
                 Section::make('Depositos e Saques')
                     ->schema([
                         TextInput::make('min_deposit')
@@ -133,7 +145,6 @@ class Settings extends Page implements HasForms
                             ->label('Ativar Futebol'),
                     ])->columns(2),
 
-
                 Section::make('Taxas')
                     ->description('Configurações de Ganhos da Plataforma')
                     ->schema([
@@ -170,10 +181,15 @@ class Settings extends Page implements HasForms
                             'left' => 'Left',
                             'right' => 'Right',
                         ]),
+                        Toggle::make('disable_spin')
+                            ->label('Disable Spin')
+                        ,
                         Toggle::make('suitpay_is_enable')
-                            ->label('SuitPay Ativo'),
+                            ->label('SuitPay Ativo')
+                        ,
                         Toggle::make('stripe_is_enable')
-                            ->label('Stripe Ativo'),
+                            ->label('Stripe Ativo')
+                        ,
                     ])->columns(4),
             ])
             ->statePath('data');

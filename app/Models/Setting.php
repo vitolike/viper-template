@@ -66,6 +66,15 @@ class Setting extends Model
         'withdrawal_limit',
         'withdrawal_period',
 
+        'disable_spin',
+
+
+        /// sub afiliado
+        'perc_sub_lv1',
+        'perc_sub_lv2',
+        'perc_sub_lv3',
+
+
 
     ];
 

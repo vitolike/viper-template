@@ -16,6 +16,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class FeeSetting extends Page implements HasForms
@@ -25,6 +26,16 @@ class FeeSetting extends Page implements HasForms
     protected static string $resource = SettingResource::class;
 
     protected static string $view = 'filament.resources.setting-resource.pages.fee-setting';
+
+    /**
+     * @dev @victormsalatiel
+     * @param Model $record
+     * @return bool
+     */
+    public static function canView(Model $record): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 
     /**
      * @return string|Htmlable
@@ -99,6 +110,7 @@ class FeeSetting extends Page implements HasForms
                             ->label('RevShare (%)')
                             ->numeric()
                             ->suffix('%')
+                            ->helperText('Este é o revshare padrão para cada usuário que se candidata a ser afiliado.')
                             ->maxLength(191),
                         Toggle::make('revshare_reverse')
                             ->inline(true)
@@ -106,6 +118,7 @@ class FeeSetting extends Page implements HasForms
                             ->helperText('Esta opção possibilita que o afiliado acumule saldos negativos decorrentes das perdas geradas pelos seus indicados.')
                         ,
                         TextInput::make('ngr_percent')
+                            ->helperText('Esta taxa é deduzida dos ganhos do afiliado para plataforma.')
                             ->label('NGR (%)')
                             ->numeric()
                             ->suffix('%')

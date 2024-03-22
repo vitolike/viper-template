@@ -2,19 +2,20 @@
 
 namespace App\Console\Commands\Games;
 
-use App\Traits\Commands\Games\WorldslotGamesCommandTrait;
+use App\Traits\Commands\Games\FiversGamesCommandTrait;
+use App\Traits\Commands\Games\WorldSlotGamesCommandTrait;
 use Illuminate\Console\Command;
 
-class WorldslotProviderList extends Command
+class WorldSlotProviderList extends Command
 {
-    use WorldslotGamesCommandTrait;
+    use WorldSlotGamesCommandTrait;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'worldslot:providers-list';
+    protected $signature = 'worldslot:providers {param?}';
 
     /**
      * The console command description.
@@ -28,6 +29,7 @@ class WorldslotProviderList extends Command
      */
     public function handle()
     {
-        return self::getProvider();
+        $param = $this->argument('param');
+        return self::getProvider($param);
     }
 }

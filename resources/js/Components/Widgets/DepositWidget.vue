@@ -126,16 +126,16 @@
                                 <div class="flex w-full">
                                     <input type="text"
                                            v-model="deposit.amount"
-                                           class="appearance-none border border-gray-300 rounded-md bg-transparent border-none"
+                                           class="appearance-none border border-gray-300 rounded-md bg-transparent border-none w-full"
                                            :min="setting.min_deposit"
                                            :max="setting.max_deposit"
                                            :placeholder="$t('Enter the value here')"
                                            required
                                     >
                                 </div>
-                                <div v-if="deposit.amount > 0" class="text-green-500 w-80 font-bold text-right">
-                                    Extra + {{ state.currencyFormat(parseFloat((deposit.amount/setting.initial_bonus * 100)) + parseFloat(deposit.amount), wallet.currency) }}
-                                </div>
+<!--                                <div v-if="deposit.amount > 0" class="text-green-500 w-80 font-bold text-right">-->
+<!--                                    Extra + {{ state.currencyFormat(parseFloat((deposit.amount/setting.initial_bonus * 100)) + parseFloat(deposit.amount), wallet.currency) }}-->
+<!--                                </div>-->
                             </div>
                         </div>
 
@@ -357,7 +357,7 @@
                 const _this = this;
                 const _toast = useToast();
 
-                HttpApi.post('suitpay/consult-status-transaction', { idTransaction: idTransaction, _method: "POST" }).then(response => {
+                HttpApi.post('suitpay/consult-status-transaction', { idTransaction: idTransaction }).then(response => {
                     _toast.success('Pedido concluído com sucesso');
                     clearInterval(_this.intervalId);
                 }).catch(error => {

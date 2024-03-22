@@ -4,7 +4,6 @@ namespace App\Filament\Resources\DepositResource\Pages;
 
 use App\Filament\Resources\DepositResource;
 use App\Traits\Providers\FiversTrait;
-use App\Traits\Providers\WorldslotTrait;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ use Illuminate\Support\Str;
 
 class EditDeposit extends EditRecord
 {
-    use FiversTrait, WorldslotTrait;
+    use FiversTrait;
     protected static string $resource = DepositResource::class;
 
     protected function getHeaderActions(): array

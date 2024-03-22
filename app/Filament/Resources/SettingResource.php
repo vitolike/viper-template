@@ -25,6 +25,14 @@ class SettingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
+    /**
+     * @dev @victormsalatiel
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 
     /**
      * @dev victormsalatiel - Meu instagram
@@ -51,12 +59,19 @@ class SettingResource extends Resource
                     ->isActiveWhen(function () {
                         return request()->routeIs(static::getRouteBaseName() . '.index');
                     }),
-                PageNavigationItem::make('Bônus')
+
+                PageNavigationItem::make('Bônus Vip')
                     ->translateLabel()
                     ->url(static::getUrl('bonus', ['record' => $record->id]))->icon('heroicon-o-currency-dollar')
                     ->isActiveWhen(function () {
                         return request()->routeIs(static::getRouteBaseName() . '.bonus');
                     }),
+                 PageNavigationItem::make('Rollover')
+                     ->translateLabel()
+                     ->url(static::getUrl('rollover', ['record' => $record->id]))->icon('heroicon-o-currency-dollar')
+                     ->isActiveWhen(function () {
+                         return request()->routeIs(static::getRouteBaseName() . '.rollover');
+                     }),
                 PageNavigationItem::make('Taxas')
                     ->translateLabel()
                     ->url(static::getUrl('fee', ['record' => $record->id]))->icon('heroicon-o-chart-pie')
@@ -136,6 +151,7 @@ class SettingResource extends Resource
             'index' => Pages\DefaultSetting::route('/'),
             'limit' => Pages\LimitSetting::route('/limit/{record}'),
             'bonus' => Pages\BonusSetting::route('/bonus/{record}'),
+            'rollover' => Pages\RolloverSetting::route('/rollover/{record}'),
             'details' => Pages\DefaultSetting::route('/details/{record}'),
             'fee' => Pages\FeeSetting::route('/fee/{record}'),
             'payment' => Pages\PaymentSetting::route('/payment/{record}'),

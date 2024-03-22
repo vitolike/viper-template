@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class GGRGamesWorldslot extends Model
+class GgrGamesWorldSlot extends Model
 {
     use HasFactory;
 
@@ -16,7 +16,7 @@ class GGRGamesWorldslot extends Model
      *
      * @var string
      */
-    protected $table = 'ggr_games_worldslot';
+    protected $table = 'ggr_games_world_slots';
     protected $appends = ['dateHumanReadable', 'createdAt'];
 
     /**

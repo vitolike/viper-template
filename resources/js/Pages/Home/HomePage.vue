@@ -1,11 +1,16 @@
 <template>
     <BaseLayout>
-        <div class="md:w-5/6 2xl:w-5/6 mx-auto p-4"><div class="mb-5">
-            
-        </div></div>
-          <!-- Banners carousel -->
+        <LoadingComponent :isLoading="isLoading">
+            <div class="text-center">
+                <span>{{ $t('Loading data from the platform') }}</span>
+            </div>
+        </LoadingComponent>
+
+        <div v-if="!isLoading" class="">
+
+            <!-- Banners carousel -->
             <div class="carousel-banners">
-             
+                <div class="md:w-4/6 2xl:w-4/6 mx-auto p-4">
                     <div class="mb-5">
                         <Carousel v-bind="settings" :breakpoints="breakpoints" ref="carouselBanner">
                             <Slide v-for="(banner, index) in banners" :key="index">
@@ -16,7 +21,17 @@
                                 </div>
                             </Slide>
 
-                         
+                            <template #addons>
+                                <navigation>
+                                    <template #next>
+                                        <i class="fa-solid fa-chevron-right text-white"></i>
+                                    </template>
+                                    <template #prev>
+                                        <i class="fa-solid fa-chevron-left text-white"></i>
+                                    </template>
+                                </navigation>
+                                <Pagination />
+                            </template>
                         </Carousel>
                     </div>
 
@@ -36,29 +51,11 @@
                         </Carousel>
                     </div>
                 </div>
-            
-<div class="md:w-5/6 2xl:w-5/6 mx-auto p-4"><div class="mb-5">
-     </div> </div>
-                <!-- categories -->
-                <div v-if="categories" class="category-list">
-                    <div class="flex mb-5 gap-4" style="max-height: 200px; overflow-x: auto; overflow-y: hidden;">
-                        <div class="flex flex-row justify-between items-center w-full" style="min-width: 100%; white-space: nowrap;">
-                            <RouterLink :to="{ name: 'casinosAll', params: { provider: 'all', category: category.slug }}" v-for="(category, index) in categories" class="flex flex-col justify-center items-center min-w-[80px] text-center">
-                                <div class="category-img">
-                                    <img :src="`/storage/`+category.image" alt="" width="35" class="">
-                                </div>
-                                <p class="mt-3">{{ $t(category.name) }}</p>
-                            </RouterLink>
-                        </div>
-                    </div>
-                </div>
-                
-               
+            </div>
 
-
-
+            <div class="md:w-4/6 2xl:w-4/6 mx-auto p-4">
                 <!-- Searchbar action -->
-<div class="mb-5 cursor-pointer w-full">
+                <div class="mb-5 cursor-pointer w-full">
                     <div class="flex">
                         <div class="relative w-full">
                             <input @click.prevent="toggleSearch" type="search"
@@ -76,6 +73,21 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- categories -->
+                <div v-if="categories" class="category-list">
+                    <div class="flex mb-5 gap-4" style="max-height: 200px; overflow-x: auto; overflow-y: hidden;">
+                        <div class="flex flex-row justify-between items-center w-full" style="min-width: 100%; white-space: nowrap;">
+                            <RouterLink :to="{ name: 'casinosAll', params: { provider: 'all', category: category.slug }}" v-for="(category, index) in categories" class="flex flex-col justify-center items-center min-w-[80px] text-center">
+                                <div class="category-img">
+                                    <img :src="`/storage/`+category.image" alt="" width="35" class="">
+                                </div>
+                                <p class="mt-3">{{ $t(category.name) }}</p>
+                            </RouterLink>
+                        </div>
+                    </div>
+                </div>
+
                 <div v-if="featured_games">
                     <div class="w-full flex justify-between mb-4">
                         <h2 class="text-xl font-bold">{{ $t('Featured') }}</h2>
@@ -92,21 +104,28 @@
                             :game="game"
                         />
                     </div>
+                </div>
 
                 <div class="mt-5">
                     <ShowProviders v-for="(provider, index) in providers" :provider="provider" :index="index" />
-               </div>
+                </div>
+
                 <div v-if="isAuthenticated" class="flex items-center justify-center h-48 mb-4">
                     <div class="grid py-4">
+                        <h1 class="text-lg font-bold mb-3 text-center">{{ $t('PREFERRED PAYMENT METHOD') }}</h1>
+                        <div class="payment-list flex items-center">
+                            <img :src="`/assets/images/icons/pix.svg`" alt="" width="128">
+
+                            <div class="divider"></div>
+
+                            <div>
 
                             </div>
-                       </div>
-                       </div>
-                      
-                       
-                    
-               
-           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </BaseLayout>
 </template>
 
@@ -121,9 +140,9 @@ import {useAuthStore} from "@/Stores/Auth.js";
 import LanguageSelector from "@/Components/UI/LanguageSelector.vue";
 import CassinoGameCard from "@/Pages/Cassino/Components/CassinoGameCard.vue";
 import HttpApi from "@/Services/HttpApi.js";
-
 import ShowCarousel from "@/Pages/Home/Components/ShowCarousel.vue";
 import {useSettingStore} from "@/Stores/SettingStore.js";
+import LoadingComponent from "@/Components/UI/LoadingComponent.vue";
 import ShowProviders from "@/Pages/Home/Components/ShowProviders.vue";
 import {searchGameStore} from "@/Stores/SearchGameStore.js";
 import CustomPagination from "@/Components/UI/CustomPagination.vue";
@@ -134,6 +153,7 @@ export default {
         CustomPagination,
         Pagination,
         ShowProviders,
+        LoadingComponent,
         ShowCarousel,
         CassinoGameCard,
         Carousel,

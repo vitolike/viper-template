@@ -27,17 +27,28 @@ class GamesKey extends Model
         'merchant_id',
         'merchant_key',
 
+        /// Games2 Api
+        'games2_agent_code',
+        'games2_agent_token',
+        'games2_agent_secret_key',
+        'games2_api_endpoint',
+
+        /// EverGame
+        'evergame_agent_code',
+        'evergame_agent_token',
+        'evergame_api_endpoint',
+
+        /// WorldSlot
+        'worldslot_agent_code',
+        'worldslot_agent_token',
+        'worldslot_agent_secret_key',
+        'worldslot_api_endpoint',
+
         /// Fivers
         'agent_code',
         'agent_token',
         'agent_secret_key',
         'api_endpoint',
-
-        /// Worldslot
-        'worldslot_agent_code',
-        'worldslot_agent_token',
-        'worldslot_agent_secret_key',
-        'worldslot_api_endpoint',
 
         // Salsa
         'salsa_base_uri',
@@ -105,36 +116,6 @@ class GamesKey extends Model
     /**
      * Get the user's first name.
      */
-    protected function worldslotAgentCode(): Attribute
-    {
-        return Attribute::make(
-            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
-        );
-    }
-
-     /**
-     * Get the user's first name.
-     */
-    protected function worldslotAgentToken(): Attribute
-    {
-        return Attribute::make(
-            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
-        );
-    }
-
-    /**
-     * Get the user's first name.
-     */
-    protected function worldslotAgentSecretKey(): Attribute
-    {
-        return Attribute::make(
-            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
-        );
-    }
-
-    /**
-     * Get the user's first name.
-     */
     protected function salsaBaseUri(): Attribute
     {
         return Attribute::make(
@@ -157,6 +138,71 @@ class GamesKey extends Model
      * Get the user's first name.
      */
     protected function salsaKey(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
+        );
+    }
+
+    /**
+     * Get the user's first name.
+     */
+    protected function worldslotAgentCode(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
+        );
+    }
+
+    /**
+     * Get the user's first name.
+     */
+    protected function worldslotAgentToken(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
+        );
+    }
+
+    /**
+     * Get the user's first name.
+     */
+    protected function worldslotAgentSecretKey(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
+        );
+    }
+
+    /**
+     * GAMES 2 API *********************************************************
+     * *********************************************************************
+     */
+
+    /**
+     * Get the user's first name.
+     */
+    protected function games2ApiEndpoint(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
+        );
+    }
+
+    /**
+     * Get the user's first name.
+     */
+    protected function games2AgentToken(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,
+        );
+    }
+
+    /**
+     * Get the user's first name.
+     */
+    protected function games2AgentSecretKey(): Attribute
     {
         return Attribute::make(
             get: fn (?string $value) => env('APP_DEMO') ? '*********************' : $value,

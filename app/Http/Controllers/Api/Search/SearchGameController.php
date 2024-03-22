@@ -20,9 +20,13 @@ class SearchGameController extends Controller
             $query->whereLike(['game_code', 'game_name', 'description', 'distribution', 'provider.name'], $request->searchTerm);
         }
 
+        $query->where('status', 1);
+
         $games = $query->orderBy('views', 'desc')->paginate(12)->appends(request()->query());
         return response()->json(['games' => $games]);
     }
+
+
 
     /**
      * Show the form for creating a new resource.

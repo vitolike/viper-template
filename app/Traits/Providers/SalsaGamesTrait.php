@@ -2,6 +2,7 @@
 
 namespace App\Traits\Providers;
 
+use App\Helpers\Core as Helper;
 use App\Models\GamesKey;
 use App\Models\Order;
 use App\Models\User;
@@ -11,8 +12,8 @@ trait SalsaGamesTrait
 {
 
     protected static $baseUrl   = '';
-	private static $token       = '';
-	private static $pn          = '';
+    private static $token       = '';
+    private static $pn          = '';
     protected static $key       = '';
     protected static $data      = [];
     protected static $hash      = [];
@@ -265,6 +266,7 @@ trait SalsaGamesTrait
                 if(!empty($wallet)) {
 
                     $checkTransaction = Order::where('type', 'bet')->where('transaction_id', $transactionID)->first();
+
                     if(!empty($checkTransaction)) {
                         $balanceTotalData = $wallet->total_balance * 100;
 
@@ -287,14 +289,27 @@ trait SalsaGamesTrait
                     $bet                = floatval($betAmount / 100);
                     $changeBonus        = 'balance';
 
-                    // reduz o saldo da carteira
-                    if($wallet->balance_bonus >= $bet) {
-                        $wallet->decrement('balance_bonus', floatval($betAmount / 100));
+                    /// deduz o saldo apostado
+                    if ($wallet->balance_bonus > $bet) {
+                        $wallet->decrement('balance_bonus', $bet); // retira do bônus
                         $changeBonus = 'balance_bonus';
-                    }elseif($wallet->balance >= $bet) {
-                        $wallet->decrement('balance', floatval($betAmount / 100));
-                    }else{
-                        return self::ShowError('PlaceBet', 'Insufficient funds', '6');
+
+                    } elseif ($wallet->balance >= $bet) {
+                        $wallet->decrement('balance', $bet); // retira do saldo depositado
+                        $changeBonus = 'balance';
+
+                    } elseif ($wallet->balance_withdrawal >= $bet) {
+                        $wallet->decrement('balance_withdrawal', $bet);
+                        $changeBonus = 'balance_withdrawal';
+
+                    } elseif ($wallet->total_balance >= $bet) {
+                        $remainingBet = $bet - $wallet->balance;
+                        $wallet->decrement('balance', $wallet->balance);
+                        $wallet->decrement('balance_withdrawal', $remainingBet);
+                        $changeBonus = 'balance';
+
+                    } else {
+                        return false;
                     }
 
                     $getWalletBalance = Wallet::where('user_id', $tokenDec['id'])->first();
@@ -302,6 +317,7 @@ trait SalsaGamesTrait
 
                     /// cria uma transação
                     $transactionId = self::CreateSalsaTransactions($tokenDec['id'], $betReferenceNum, $transactionID, 'bet', $changeBonus, $bet, $tokenDec['game'], $tokenDec['pn']);
+
                     if($transactionId) {
                         $response = "
                             <PKT>
@@ -346,13 +362,15 @@ trait SalsaGamesTrait
             'session_id'    => $betReferenceNum,
             'transaction_id'=> $transactionID,
             'type'          => $type,
-            'type_money'    => $changeBonus ? 'balance_bonus' : 'balance',
+            'type_money'    => $changeBonus,
             'amount'        => $amount,
-            'providers'     => 'Salsa',
+            'providers'     => 'salsa',
             'game'          => $game,
             'game_uuid'     => $pn,
             'round_id'      => 1,
         ]);
+
+        // \Log::info('Order: '. $order);
 
         if($order) {
             return $order->id;
@@ -378,38 +396,52 @@ trait SalsaGamesTrait
         if(self::ValidateHash($params, $preparedToken)) {
             $tokenDec   = \Helper::DecToken($token);
             if($tokenDec['status']) {
+
+
                 $wallet         = Wallet::where('user_id', $tokenDec['id'])->first();
                 $WinAmount      = $params['WinAmount']['@attributes']['Value'] / 100;
                 $transaction    = Order::where('transaction_id', $transactionID)->where('type', 'bet')->first();
 
                 if(!empty($transaction)) {
-                    $changeBonus = 'balance';
+                    $result_bet = 'loss';
 
-                    /// verificar se é bonus ou balance
-                    if($transaction->type == 'balance_bonus') {
-                        $changeBonus = $transaction->type; // define se é bonus
+                    \Log::info('________________________________________________________________________________________');
 
-                        /// verificar a quantidade de rollover
-                        if($wallet->balance_bonus_rollover == 0 || empty($wallet->balance_bonus_rollover)) {
-                            $wallet->increment('balance_bonus', $WinAmount);
-                        }else{
-                            /// verifica se o valor do rollover é maior que o ganho, se sim, decrementa o valor
-                            if($wallet->balance_bonus_rollover >= $WinAmount) {
-                                $wallet->decrement('balance_bonus_rollover', $WinAmount);
-                            }else{
-                                /// caso contrario define como zero.
-                                $wallet->update(['balance_bonus_rollover' => 0]);
-                            }
+                    \Log::info('APOSTOU: ' . $transaction->amount);
+                    \Log::info('GANHOU: ' . $WinAmount);
+                    // \Log::info('transaction: ' . json_encode($transaction));
 
-                            $wallet->increment('balance_bonus', $WinAmount);
-                        }
+
+                    if($WinAmount - $transaction->amount > 0){
+                        $WinAmount = $WinAmount- $transaction->amount;
+                        $result_bet = 'win';
+
+                        \Log::info('TOTAL GANHO: '. $WinAmount);
+                        Helper::generateGameHistory(
+                            $wallet->user_id,
+                            $result_bet,
+                            $WinAmount,
+                            $transaction->amount,
+                            $transaction->getAttributes()['type_money'],
+                            $transaction->transaction_id
+                        );
+
                     }else{
-                        /// pagando o ganhos
-                        $wallet->increment('balance', $WinAmount);
+                        $LossAmount = $transaction->amount - $WinAmount;
+                        $result_bet = 'loss';
+                        $WinAmount = 0;
+
+                        \Log::info('TOTAL PERDIDO: ' .$LossAmount);
+                        Helper::generateGameHistory(
+                            $wallet->user_id,
+                            $result_bet,
+                            $WinAmount,
+                            $LossAmount,
+                            $transaction->getAttributes()['type_money'],
+                            $transaction->transaction_id
+                        );
                     }
 
-                    /// criando uma nova transação de ganho "Win"
-                    self::CreateTransactions($tokenDec['id'], $transaction->session_id, $transactionID, 'win', $changeBonus, $WinAmount, $tokenDec['game'], $tokenDec['pn']);
                     $getWalletBalance = Wallet::where('user_id', $tokenDec['id'])->first();
                     $balanceTotal = $getWalletBalance->total_balance * 100;
 
@@ -461,7 +493,7 @@ trait SalsaGamesTrait
                     $wallet = Wallet::where('user_id', $tokenDec['id'])->first();
 
                     /// verificar se é bonus ou balance
-                    if($transaction->type == 'balance_bonus') {
+                    if($transaction->type_money == 'balance_bonus') {
                         $wallet->increment('balance_bonus', $refundAmount); /// retorna o valor
                     }else{
                         $wallet->increment('balance', $refundAmount); /// retorna o valor

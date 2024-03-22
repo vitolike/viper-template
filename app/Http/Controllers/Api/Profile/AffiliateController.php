@@ -8,6 +8,7 @@ use App\Models\AffiliateWithdraw;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class AffiliateController extends Controller
 {
@@ -34,8 +35,19 @@ class AffiliateController extends Controller
     public function generateCode()
     {
         $code = $this->gencode();
+        $setting = \Helper::getSetting();
+
         if(!empty($code)) {
-            if(auth('api')->user()->update(['inviter_code' => $code])) {
+            $user = auth('api')->user();
+            \DB::table('model_has_roles')->updateOrInsert(
+                [
+                    'role_id' => 2,
+                    'model_type' => 'App\Models\User',
+                    'model_id' => $user->id,
+                ],
+            );
+
+            if(auth('api')->user()->update(['inviter_code' => $code, 'affiliate_revenue_share' => $setting->revshare_percentage])) {
                 return response()->json(['status' => true, 'message' => trans('Successfully generated code')]);
             }
 
@@ -64,6 +76,33 @@ class AffiliateController extends Controller
      */
     public function makeRequest(Request $request)
     {
+        $rules = [
+            'amount'   => 'required',
+            'pix_type' => 'required',
+        ];
+
+        switch ($request->pix_type) {
+            case 'document':
+                $rules['pix_key'] = 'required|cpf_ou_cnpj';
+                break;
+            case 'email':
+                $rules['pix_key'] = 'required|email';
+                break;
+            case 'phoneNumber':
+                $rules['pix_key'] = 'required|telefone';
+                break;
+            default:
+                $rules['pix_key'] = 'required';
+                break;
+
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
         $comission = auth('api')->user()->wallet->refer_rewards;
 
         if(floatval($comission) >= floatval($request->amount)) {
