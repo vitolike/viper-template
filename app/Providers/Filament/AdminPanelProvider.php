@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
-use App\Filament\Pages\AdvancedPage;
 use App\Filament\Pages\GamesKeyPage;
 use App\Filament\Pages\GatewayPage;
 use App\Filament\Pages\LayoutCssCustom;
@@ -18,7 +17,6 @@ use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\DepositResource;
 use App\Filament\Resources\GameResource;
 use App\Filament\Resources\MissionResource;
-use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\ProviderResource;
 use App\Filament\Resources\SettingResource;
 use App\Filament\Resources\SubAffiliateResource;
@@ -134,9 +132,15 @@ class AdminPanelProvider extends PanelProvider
                                 ->icon('heroicon-o-banknotes')
                                 ->label(fn (): string => auth()->user()->hasRole('afiliado') ? 'Meus Saques' : 'Saques de Afiliados')
                                 ->url(fn (): string => AffiliateWithdrawResource::getUrl())
-                                ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.sub-affiliates.index'))
+                                ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.sub-affiliates.index '))
                                 ->visible(fn(): bool => auth()->user()->hasRole('afiliado') || auth()->user()->hasRole('admin')),
 
+                            NavigationItem::make('user_affiliates')
+                                ->icon('heroicon-o-users')
+                                ->label(fn (): string => 'Minhas Indicações')
+                                ->url(fn (): string => AffiliateUserResource::getUrl())
+                                ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.sub-affiliates.index '))
+                                ->visible(fn(): bool => auth()->user()->hasRole('afiliado')),
                         ])
                     ,
                     auth()->user()->hasRole('admin') ?
@@ -153,7 +157,6 @@ class AdminPanelProvider extends PanelProvider
                                 ...CategoryResource::getNavigationItems(),
                                 ...ProviderResource::getNavigationItems(),
                                 ...GameResource::getNavigationItems(),
-                                ...OrderResource::getNavigationItems(),
                             ])
                         : NavigationGroup::make()
                     ,
@@ -225,30 +228,13 @@ class AdminPanelProvider extends PanelProvider
                             ])
                         : NavigationGroup::make()
                     ,
-                    NavigationGroup::make('maintenance')
-                        ->label('Manutenção')
+                    NavigationGroup::make('affiliate_link')
+                        ->label('Marketing')
                         ->items([
-                            NavigationItem::make('advanced_page')
-                                ->icon('heroicon-o-banknotes')
-                                ->label(fn (): string => 'Opções Avançada')
-                                ->url(fn (): string => AdvancedPage::getUrl())
-                                ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.sub-affiliates.index'))
-                                ->visible(fn(): bool => auth()->user()->hasRole('admin')),
-
-                            NavigationItem::make('Limpar o cache')
-                                ->url(url('/clear'), shouldOpenInNewTab: false)
-                                ->icon('heroicon-o-trash')
-                        ])
-                    ,
-                    auth()->user()->hasRole('afiliado') ?
-                        NavigationGroup::make('affiliate_link')
-                            ->label('Marketing')
-                            ->items([
-                                NavigationItem::make('Link de Convite')
-                                    ->url(url('/register?code='.auth()->user()->inviter_code), shouldOpenInNewTab: true)
-                                    ->icon('heroicon-o-link')
-                            ])
-                        : NavigationGroup::make(),
+                            NavigationItem::make('Link de Convite')
+                                ->url(url('/register?code='.auth()->user()->inviter_code), shouldOpenInNewTab: true)
+                                ->icon('heroicon-o-link')
+                        ]),
                 ]);
             })
             ->middleware([

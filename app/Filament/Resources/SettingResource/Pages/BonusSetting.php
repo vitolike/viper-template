@@ -17,7 +17,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -30,21 +29,11 @@ class BonusSetting extends Page implements HasForms
     protected static string $view = 'filament.resources.setting-resource.pages.bonus-setting';
 
     /**
-     * @dev @victormsalatiel
-     * @param Model $record
-     * @return bool
-     */
-    public static function canView(Model $record): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
-
-    /**
      * @return string|Htmlable
      */
     public function getTitle(): string | Htmlable
     {
-        return __('Bônus Vip');
+        return __('Bônus');
     }
 
     public Setting $record;
@@ -107,14 +96,42 @@ class BonusSetting extends Page implements HasForms
                 Section::make('Ajuste de Bônus')
                     ->description('Formulário ajustar o Bônus plataforma')
                     ->schema([
+                        TextInput::make('min_deposit')
+                            ->label('Min Deposito')
+                            ->numeric()
+                            ->maxLength(191),
+                        TextInput::make('max_deposit')
+                            ->label('Max Deposito')
+                            ->numeric()
+                            ->maxLength(191),
+                        TextInput::make('min_withdrawal')
+                            ->label('Min Saque')
+                            ->numeric()
+                            ->maxLength(191),
+                        TextInput::make('max_withdrawal')
+                            ->label('Max Saque')
+                            ->numeric()
+                            ->maxLength(191),
+                        TextInput::make('rollover')
+                            ->label('Rollover Bônus')
+                            ->numeric()
+                            ->default(1)
+                            ->suffix('x')
+                            ->helperText('Coloque a quantidade de multiplicação do Bônus')
+                            ->maxLength(191),
+                        TextInput::make('rollover_deposit')
+                            ->label('Rollover Deposito')
+                            ->numeric()
+                            ->default(1)
+                            ->suffix('x')
+                            ->helperText('Coloque a quantidade de multiplicação do Deposito')
+                            ->maxLength(191),
                         TextInput::make('bonus_vip')
                             ->label('Bônus Vip')
                             ->placeholder('Defina o Bônus vip, quanto de bônus ganha a cada 1 real/dolar depositado.')
                             ->numeric()
-                            ->helperText('Este é o valor de bônus associado a cada depósito de 1 real. Por exemplo, quando o usuário realiza um depósito de 1 real, ele recebe a quantia correspondente em Bônus VIP.')
                             ->maxLength(191),
                         Toggle::make('activate_vip_bonus')
-                            ->inline(false)
                             ->label('Ativar/Desativar Bônus Vip'),
                     ])->columns(2)
             ])

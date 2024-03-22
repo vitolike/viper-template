@@ -27,32 +27,6 @@ return new class extends Migration
             $table->string('placeholder_color', 20)->default('#4D565E');
             $table->string('background_color', 20)->default('#24262B');
             $table->string('border_radius', 20)->default('.25rem');
-
-            $table->string('background_base', 20)->default('#ECEFF1');
-            $table->string('input_primary_dark', 20)->default('#24262B');
-
-            $table->string('input_primary', 20)->default('#ECEFF1');
-            $table->string('background_base_dark', 20)->default('#24262B');
-
-            $table->string('carousel_banners', 20)->default('#1E2024');
-            $table->string('carousel_banners_dark', 20)->default('#1E2024');
-
-            $table->string('sidebar_color', 20)->default('#1E2024');
-            $table->string('sidebar_color_dark', 20)->default('#1E2024');
-
-            $table->string('navtop_color', 20)->default('#1E2024');
-            $table->string('navtop_color_dark', 20)->default('#1E2024');
-
-            $table->string('side_menu', 20)->default('#1E2024');
-            $table->string('side_menu_dark', 20)->default('#1E2024');
-
-            $table->string('card_color', 20)->default('#1E2024');
-            $table->string('card_color_dark', 20)->default('#1E2024');
-
-            $table->string('footer_color', 20)->default('#1E2024');
-            $table->string('footer_color_dark', 20)->default('#1E2024');
-
-
             $table->text('custom_css')->nullable();
             $table->text('custom_js')->nullable();
             $table->timestamps();

@@ -1,19 +1,15 @@
 <template>
     <div :key="index" class="game-list flex flex-col mt-5 relative">
         <div class="w-full flex justify-between mb-2">
-            <h2 class="text-xl font-bold">{{ $t(provider.name) }}</h2>
+            
             <div class="flex">
                 <RouterLink
                     :to="{ name: 'casinosAll', params: { provider: provider.id, category: 'all' } }"
-                    class="item-game px-3 py-2 mr-2 rounded">
-                    {{ $t('See all') }}
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                >
+             <i class="fa-solid fa-right-from-bracket"></i> <h2 class="text-xl font-bold"> {{ $t(provider.name) }} {{ $t('+') }}</h2>
+
                 </RouterLink>
-                <button @click.prevent="ckCarousel.prev()" class="item-game px-3 py-2 rounded mr-2">
-                    <i class="fa-solid fa-angle-left"></i>
-                </button>
-                <button @click.prevent="ckCarousel.next()" class="item-game px-3 py-2 rounded">
-                    <i class="fa-solid fa-angle-right"></i>
-                </button>
             </div>
         </div>
 
@@ -23,13 +19,13 @@
                   @init="onCarouselInit(index)"
                   @slide-start="onSlideStart(index)"
         >
-            <Slide v-if="isLoading" v-for="(i, iloading) in 10" :index="iloading">
+            <Slide v-if="isLoading" v-for="(i, iloading) in 10" :key="iloading">
                 <div  role="status" class="w-full flex items-center justify-center h-48 mr-6 max-w-sm bg-gray-300 rounded-lg animate-pulse dark:bg-gray-700 text-4xl">
                     <i class="fa-duotone fa-gamepad-modern"></i>
                 </div>
             </Slide>
 
-            <Slide v-if="provider.games && !isLoading" v-for="(game, providerId) in provider.games" :index="providerId">
+            <Slide v-if="provider.games && !isLoading" v-for="(game, providerId) in provider.games" :key="providerId">
                 <CassinoGameCard
                     :index="providerId"
                     :title="game.game_name"
@@ -43,16 +39,14 @@
     </div>
 </template>
 
-
 <script>
-
-import { Carousel, Navigation, Slide } from 'vue3-carousel';
-import {onMounted, ref} from "vue";
-import CassinoGameCard from "@/Pages/Cassino/Components/CassinoGameCard.vue";
+import { Carousel, Slide } from 'vue3-carousel';
+import { onMounted, ref } from 'vue';
+import CassinoGameCard from '@/Pages/Cassino/Components/CassinoGameCard.vue';
 
 export default {
     props: ['provider', 'index'],
-    components: {CassinoGameCard, Carousel, Navigation, Slide },
+    components: { CassinoGameCard, Carousel, Slide },
     data() {
         return {
             isLoading: false,
@@ -76,33 +70,25 @@ export default {
         const ckCarousel = ref(null)
 
         onMounted(() => {
-
+            // Callback on mounted
         });
 
         return {
             ckCarousel
         };
     },
-    computed: {
-
-    },
-    mounted() {
-
-    },
     methods: {
         onCarouselInit(index) {
-
+            // Method logic for carousel init
         },
         onSlideStart(index) {
-
+            // Method logic for slide start
         },
-    },
-    watch: {
-
     },
 };
 </script>
 
 <style scoped>
-
+/* Estilos específicos do componente */
 </style>
+

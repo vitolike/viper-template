@@ -5,22 +5,18 @@ namespace App\Traits\Providers;
 use App\Helpers\Core as Helper;
 use App\Models\Game;
 use App\Models\GamesKey;
-use App\Models\GgrGamesWorldSlot;
+use App\Models\GGRGamesWorldslot;
 use App\Models\Order;
-use App\Models\Provider;
-use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Traits\Missions\MissionTrait;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 
-trait WorldSlotTrait
+trait WorldslotTrait
 {
     use MissionTrait;
 
     /**
-     * 456
      * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @var string
      */
@@ -33,7 +29,7 @@ trait WorldSlotTrait
      * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @return void
      */
-    public static function getCredentialsWorldSlot(): bool
+    public static function getCredentialsWorldslot(): bool
     {
         $setting = GamesKey::first();
 
@@ -45,33 +41,11 @@ trait WorldSlotTrait
         return true;
     }
 
-    /**
-     * @dev victormsalatiel - Corra de golpista, me chame no instagram
-     * @param $rtp
-     * @param $provider
-     * @return void
-     */
-    public static function LoadingGamesWorldSlot()
+    public static function GetAllGamesWorldslot()
     {
-        if(self::getCredentialsWorldSlot()) {
-            $postArray = [
-                "agent_code" => "",
-                "agent_token" => "",
-                "user_code" => "test",
-                "game_type" => "slot",
-                "provider_code" => "PRAGMATIC",
-                "game_code" => "vs20doghouse",
-                "lang" => "en",
-                "user_balance" => 1000
-            ];
+        if(self::getCredentialsWorldslot()) {
 
-            $response = Http::post(self::$apiEndpoint.'game_launch', $postArray);
 
-            if($response->successful()) {
-                $games = $response->json();
-
-                dd($games);
-            }
         }
     }
 
@@ -81,11 +55,10 @@ trait WorldSlotTrait
      * @param $provider
      * @return void
      */
-    public static function UpdateRTPWorldSlot($rtp, $provider)
+    public static function UpdateRTPWorldslot($rtp, $provider)
     {
-        if(self::getCredentialsWorldSlot()) {
+        if(self::getCredentialsWorldslot()) {
             $postArray = [
-                "method"        => "control_rtp",
                 "agent_code"    => self::$agentCode,
                 "agent_token"   => self::$agentToken,
                 "provider_code" => $provider,
@@ -93,7 +66,7 @@ trait WorldSlotTrait
                 "rtp"           => $rtp
             ];
 
-            $response = Http::post(self::$apiEndpoint, $postArray);
+            $response = Http::post(self::$apiEndpoint."/control_rtp", $postArray);
 
             if($response->successful()) {
 
@@ -108,17 +81,16 @@ trait WorldSlotTrait
      *
      * @return bool
      */
-    public static function createUserWorldSlot()
+    public static function createUserWorldslot()
     {
-        if(self::getCredentialsWorldSlot()) {
+        if(self::getCredentialsWorldslot()) {
             $postArray = [
-                "method"        => "user_create",
                 "agent_code"    => self::$agentCode,
                 "agent_token"   => self::$agentToken,
                 "user_code"     => auth('api')->id() . '',
             ];
 
-            $response = Http::post(self::$apiEndpoint, $postArray);
+            $response = Http::post(self::$apiEndpoint."/user_create", $postArray);
 
             if($response->successful()) {
                 return true;
@@ -134,32 +106,32 @@ trait WorldSlotTrait
      * Metodo responsavel para iniciar o jogo
      *
      */
-    public static function GameLaunchWorldSlot($provider_code, $game_code, $lang, $userId)
+    public static function GameLaunchWorldslot($provider_code, $game_code, $lang, $userId)
     {
-        if(self::getCredentialsWorldSlot()) {
+        if(self::getCredentialsWorldslot()) {
             $wallet = Wallet::where('user_id', $userId)->first();
-
+            $balance = $wallet->total_balance;
+            
             $postArray = [
                 "agent_code"    => self::$agentCode,
                 "agent_token"   => self::$agentToken,
                 "user_code"     => $userId.'',
                 "provider_code" => $provider_code,
                 "game_code"     => $game_code,
-                'user_balance'  => $wallet->total_balance,
-                'game_type'     => 'slot',
-                "lang"          => $lang
+                "lang"          => $lang,
+                "user_balance"  => $balance
             ];
 
             //\DB::table('debug')->insert(['text' => json_encode($postArray)]);
-            $response = Http::post(self::$apiEndpoint.'/game_launch', $postArray);
+            $response = Http::post(self::$apiEndpoint."/game_launch", $postArray);
 
             if($response->successful()) {
                 $data = $response->json();
 
                 if($data['status'] == 0) {
                     if($data['msg'] == 'Invalid User') {
-                        if(self::createUserWorldSlot()) {
-                            return self::GameLaunchWorldSlot($provider_code, $game_code, $lang, $userId);
+                        if(self::createUserWorldslot()) {
+                            return self::GameLaunchWorldslot($provider_code, $game_code, $lang, $userId);
                         }
                     }
                 }else{
@@ -173,20 +145,19 @@ trait WorldSlotTrait
     }
 
     /**
-     * Get WorldSlot Balance
+     * Get Worldslot Balance
      * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @return false|void
      */
-    public static function getWorldSlotUserDetail()
+    public static function getWorldslotUserDetail()
     {
-        if(self::getCredentialsWorldSlot()) {
+        if(self::getCredentialsWorldslot()) {
             $dataArray = [
-                "method"        => "call_players",
                 "agent_code"    => self::$agentCode,
                 "agent_token"   => self::$agentToken,
             ];
 
-            $response = Http::post(self::$apiEndpoint, $dataArray);
+            $response = Http::post(self::$apiEndpoint."/call_players", $dataArray);
 
             if($response->successful()) {
                 $data = $response->json();
@@ -200,7 +171,7 @@ trait WorldSlotTrait
     }
 
     /**
-     * Get WorldSlot Balance
+     * Get Worldslot Balance
      * @dev victormsalatiel - Corra de golpista, me chame no instagram
      * @param $provider_code
      * @param $game_code
@@ -208,29 +179,83 @@ trait WorldSlotTrait
      * @param $userId
      * @return false|void
      */
-    public static function getWorldSlotBalance()
+    public static function getWorldslotBalance()
     {
-        try {
-            if(self::getCredentialsWorldSlot()) {
-                $dataArray = [
-                    "agent_code"    => self::$agentCode,
-                    "agent_token"   => self::$agentToken,
-                ];
+        if(self::getCredentialsWorldslot()) {
+            $dataArray = [
+                "agent_code"    => self::$agentCode,
+                "agent_token"   => self::$agentToken,
+            ];
 
-                $response = Http::post(self::$apiEndpoint.'/info', $dataArray);
+            $response = Http::post(self::$apiEndpoint."/info", $dataArray);
 
-                if($response->successful()) {
-                    $data = $response->json();
+            if($response->successful()) {
+                $data = $response->json();
 
-                    return $data['agent_balance'] ?? 0;
-                }else{
-                    return 0;
-                }
+                return $data['agent_balance'] ?? 0;
+            }else{
+                return false;
             }
-        } catch (\Exception $e) {
-            return 0;
         }
 
+    }
+
+
+    /**
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
+     * @param $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private static function GetBalanceInfoWorldslot($request)
+    {
+        $wallet = Wallet::where('user_id', $request->user_code)->where('active', 1)->first();
+        if(!empty($wallet) && $wallet->total_balance > 0) {
+            return response()->json([
+                'status' => 1,
+                'user_balance' => $wallet->total_balance
+            ]);
+        }
+
+        return response()->json([
+            'status' => 0,
+            'user_balance' => 0,
+            'msg' => "INSUFFICIENT_USER_FUNDS"
+        ]);
+    }
+
+    /**
+     * Set Transactions
+     *
+     * @dev victormsalatiel - Corra de golpista, me chame no instagram
+     * @param $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private static function SetTransactionWorldslot($request)
+    {
+        $data = $request->all();
+        $wallet = Wallet::where('user_id', $request->user_code)->where('active', 1)->first();
+
+        if(!empty($wallet)) {
+            if($data['game_type'] == 'slot' && isset($data['slot'])) {
+
+                $game = Game::where('game_code', $data['slot']['game_code'])->first();
+
+                /// verificar se usuário tem desafio ativo
+                self::CheckMissionExist($request->user_code, $game, 'wordslot');
+
+                $winMoney = (floatval($data['slot']['win']) - floatval($data['slot']['bet']));
+                return self::PrepareTransactionsWorldslot($wallet, $request->user_code, $data['slot']['txn_id'], $data['slot']['bet'], $winMoney, $data['slot']['game_code'], $data['slot']['provider_code']);
+            }
+
+            if($data['game_type'] == 'live' &&  isset($data['live'])) {
+                $game = Game::where('game_code', $data['live']['game_code'])->first();
+
+                /// verificar se usuário tem desafio ativo
+                self::CheckMissionExist($request->user_code, $game, 'wordslot');
+
+                return self::PrepareTransactionsWorldslot($wallet, $request->user_code, $data['live']['txn_id'], $data['live']['bet'], $data['live']['win'], $data['live']['game_code'], $data['live']['provider_code']);
+            }
+        }
     }
 
     /**
@@ -246,289 +271,75 @@ trait WorldSlotTrait
      * @param $gameCode
      * @return \Illuminate\Http\JsonResponse|void
      */
-    private static function PrepareTransactionsWorldSlot($walletId, $userCode, $txnId, $betMoney, $winMoney, $gameCode, $providerCode)
+    private static function PrepareTransactionsWorldslot($wallet, $userCode, $txnId, $betMoney, $winMoney, $gameCode, $providerCode)
     {
-        $wallet = Wallet::find($walletId);
         $user = User::find($wallet->user_id);
 
         $typeAction  = 'bet';
         $changeBonus = 'balance';
         $bet = floatval($betMoney);
 
-
         /// deduz o saldo apostado
-        if ($wallet->balance_bonus > $bet) {
-            $wallet->decrement('balance_bonus', $bet); // retira do bônus
-            $changeBonus = 'balance_bonus';
-            \Log::info('TIPO FINAL 1 ' . json_encode($wallet));
-
-        } elseif ($wallet->balance >= $bet) {
-            $wallet->decrement('balance', $bet); // retira do saldo depositado
-            $changeBonus = 'balance';
-            \Log::info('TIPO FINAL 2 ' . json_encode($wallet));
-
-        } elseif ($wallet->balance_withdrawal >= $bet) {
-            $wallet->decrement('balance_withdrawal', $bet);
-            $changeBonus = 'balance_withdrawal';
-            \Log::info('TIPO FINAL 3 ' . json_encode($wallet));
-
-        } elseif ($wallet->total_balance >= $bet) {
-            $remainingBet = $bet - $wallet->balance;
-            $wallet->decrement('balance', $wallet->balance);
-            $wallet->decrement('balance_withdrawal', $remainingBet);
-            $changeBonus = 'balance';
-            \Log::info('TIPO FINAL 4 ' . json_encode($wallet));
-        } else {
-            \Log::info('TIPO FINAL 5 ' . json_encode($wallet));
-            \Log::info('TIPO start wallet ' . json_encode($wallet));
-            \Log::info('TIPO start bet ' . json_encode($bet));
-            return false;
+        if($wallet->balance_bonus >= $bet) {
+            $wallet->decrement('balance_bonus', $bet); /// retira do bonus
+            $changeBonus = 'balance_bonus'; /// define o tipo de transação
+        }elseif($wallet->balance >= $bet) {
+            $wallet->decrement('balance', $bet); /// retira do saldo depositado
+            $changeBonus = 'balance'; /// define o tipo de transação
+        }elseif($wallet->balance_withdrawal >= $bet) {
+            $wallet->decrement('balance_withdrawal', $bet); /// retira do saldo liberado pra saque
+            $changeBonus = 'balance_withdrawal'; /// define o tipo de transação
         }
 
+        if(floatval($winMoney) > $bet) {
+            $typeAction = 'win';
+            self::CreateTransactionsWorldslot($userCode, time(), $txnId, $typeAction, $changeBonus, $betMoney, $gameCode, $gameCode);
 
-        /// criar uma transação
-        $transaction = self::CreateTransactionsWorldSlot($userCode, time(), $txnId, $typeAction, $changeBonus, $bet, $gameCode, $gameCode);
-
-        if($transaction) {
             /// salvar transação GGR
-            GgrGamesWorldSlot::create([
+            GGRGamesWorldslot::create([
                 'user_id' => $userCode,
                 'provider' => $providerCode,
                 'game' => $gameCode,
-                'balance_bet' => $bet,
-                'balance_win' => 0,
+                'balance_bet' => $betMoney,
+                'balance_win' => $winMoney,
                 'currency' => $wallet->currency
             ]);
 
-            return $transaction;
-        }
+            /// pagar afiliado
+            Helper::generateGameHistory($user, $typeAction, $winMoney, $betMoney, $gameCode, $gameCode, $changeBonus, $providerCode);
 
-        return false;
-    }
-
-    /**
-     * @param $request
-     * @dev victormsalatiel - Corra de golpista, me chame no instagram
-     * @return \Illuminate\Http\JsonResponse|null
-     */
-    public static function WebhooksWorldSlot($request)
-    {
-        switch ($request->method) {
-            case "user_balance":
-                return self::GetUserBalanceWorldSlot($request);
-            case "game_callback":
-                return self::GameCallbackWorldSlot($request);
-            case "money_callback":
-                return self::MoneyCallbackWorldSlot($request);
-            default:
-                return response()->json(['status' => 0]);
-        }
-    }
-
-    /**
-     * @dev victormsalatiel - Corra de golpista, me chame no instagram
-     * @param $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    private static function GetUserBalanceWorldSlot($request)
-    {
-        $wallet = Wallet::where('user_id', $request->user_code)->where('active', 1)->first();
-        if(!empty($wallet) && $wallet->total_balance > 0) {
             return response()->json([
                 'status' => 1,
                 'user_balance' => $wallet->total_balance
             ]);
         }
 
-        return response()->json([
-            'status' => 0,
-            'msg' => "INVALID_USER"
+        /// criar uma transação
+        $checkTransaction = Order::where('transaction_id', $txnId)->first();
+        if(empty($checkTransaction)) {
+            self::CreateTransactionsWorldslot($userCode, time(), $txnId, $typeAction, $changeBonus, $betMoney, $gameCode, $gameCode);
+        }
+
+        /// salvar transação GGR
+        GGRGamesWorldslot::create([
+            'user_id' => $userCode,
+            'provider' => $providerCode,
+            'game' => $gameCode,
+            'balance_bet' => $betMoney,
+            'balance_win' => 0,
+            'currency' => $wallet->currencyS
         ]);
-    }
 
-    /**
-     * @dev victormsalatiel - Corra de golpista, me chame no instagram
-     * @param $request
-     * @return \Illuminate\Http\JsonResponse|void|null
-     */
-    private static function GameCallbackWorldSlot($request)
-    {
-        $data = $request->all();
-        try {
-            if($data['game_type'] == 'slot' && isset($data['slot'])) {
-                return self::ProcessPlay($data, $request->user_code,'slot');
-            }
+        Helper::lossRollover($wallet, $betMoney);
 
-            if($data['game_type'] == 'casino' && isset($data['casino'])) {
-                return self::ProcessPlay($data, $request->user_code, 'casino');
-            }
-
-            return response()->json([
-                'status' => 0,
-                'msg' => 'INVALID_USER	'
-            ]);
-        } catch (\Exception $e) {
-            dd($e->getMessage());
-        }
-    }
-
-    /**
-     * @param $data
-     * @param $userId
-     * @param $type
-     * @return \Illuminate\Http\JsonResponse|void
-     */
-    private static function ProcessPlay($data, $userId, $type)
-    {
-        $wallet = Wallet::where('user_id', $userId)->where('active', 1)->first();
-        if(!empty($wallet)) {
-            $game = Game::where('game_code', $data[$type]['game_code'])->first();
-
-            /// verificar se é transação de vitoria duplicada
-            $transactionWin = Order::where('transaction_id', $data[$type]['txn_id'])->where('type', 'win')->first();
-            if(!empty($transactionWin)) {
-                return response()->json([
-                    'status' => 0,
-                    'user_balance' => $wallet->total_balance,
-                    'msg' => 'DUPLICATED_REQUEST'
-                ]);
-            }
-
-            $transaction = Order::where('transaction_id', $data[$type]['txn_id'])->where('type', 'bet')->first();
-            if(!empty($transaction)) {
-                if(floatval($data[$type]['win']) > 0) {
-                    GgrGamesWorldSlot::create([
-                        'user_id' => $data[$type]['game_code'],
-                        'provider' => $data[$type]['provider_code'],
-                        'game' => $data[$type]['win'],
-                        'balance_bet' => $transaction->amount,
-                        'balance_win' => 0,
-                        'currency' => $wallet->currency
-                    ]);
-
-                    Helper::generateGameHistory(
-                        $wallet->user_id,
-                        'win',
-                        $data[$type]['win'],
-                        $transaction->amount,
-                        $transaction->getAttributes()['type_money'],
-                        $transaction->transaction_id
-                    );
-
-                    $wallet = Wallet::where('user_id', $userId)->where('active', 1)->first();
-                    return response()->json([
-                        'status' => 1,
-                        'user_balance' => $wallet->total_balance,
-                    ]);
-                }else{
-                    return response()->json([
-                        'status' => 0,
-                        'user_balance' => $wallet->total_balance,
-                        'msg' => 'DUPLICATED_REQUEST'
-                    ]);
-                }
-            }
-
-
-            /// verificar se tem saldo
-            if(floatval($wallet->total_balance) >= $data[$type]['bet']) {
-
-                /// verificar se usuário tem desafio ativo
-                self::CheckMissionExist($userId, $game, 'worldslot');
-                $transaction = self::PrepareTransactionsWorldSlot(
-                    $wallet->id, $userId,
-                    $data[$type]['txn_id'],
-                    $data[$type]['bet'],
-                    $data[$type]['win'],
-                    $data[$type]['game_code'],
-                    $data[$type]['provider_code']);
-
-                if($transaction) {
-                    /// verificar se é transação de vitoria duplicada
-                    $transactionWin2 = Order::where('transaction_id', $data[$type]['txn_id'])->where('type', 'win')->first();
-                    if(!empty($transactionWin2)) {
-                        $wallet = Wallet::where('user_id', $userId)->where('active', 1)->first();
-                        return response()->json([
-                            'status' => 0,
-                            'user_balance' => $wallet->total_balance,
-                            'msg' => 'DUPLICATED_REQUEST'
-                        ]);
-                    }
-
-                    $transaction = Order::where('transaction_id', $data[$type]['txn_id'])->where('type', 'bet')->first();
-                    if(!empty($transaction)) {
-                        if(floatval($data[$type]['win']) > 0) {
-                            GgrGamesWorldSlot::create([
-                                'user_id' => $data[$type]['game_code'],
-                                'provider' => $data[$type]['provider_code'],
-                                'game' => $data[$type]['win'],
-                                'balance_bet' => $transaction->amount,
-                                'balance_win' => 0,
-                                'currency' => $wallet->currency
-                            ]);
-
-                            Helper::generateGameHistory(
-                                $wallet->user_id,
-                                'win',
-                                $data[$type]['win'],
-                                $transaction->amount,
-                                $transaction->getAttributes()['type_money'],
-                                $transaction->transaction_id
-                            );
-
-                            $wallet = Wallet::where('user_id', $userId)->where('active', 1)->first();
-                            return response()->json([
-                                'status' => 1,
-                                'user_balance' => $wallet->total_balance,
-                            ]);
-                        }
-                    }
-
-                    Helper::generateGameHistory(
-                        $wallet->user_id,
-                        'loss',
-                        $data[$type]['win'],
-                        $transaction->amount,
-                        $transaction->getAttributes()['type_money'],
-                        $transaction->transaction_id
-                    );
-
-
-                    $wallet = Wallet::where('user_id', $userId)->where('active', 1)->first();
-                    return response()->json([
-                        'status' => 1,
-                        'user_balance' => $wallet->total_balance,
-                    ]);
-                }else{
-                    return response()->json([
-                        'status' => 0,
-                        'msg' => 'INSUFFICIENT_USER_FUNDS'
-                    ]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Money Callback World Slot
-     * @param $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    private static function MoneyCallbackWorldSlot($request)
-    {
-        $data = $request->all();
-
-        $transaction = Order::where('transaction_id', $data['txn_id'])->first();
-        $wallet = Wallet::where('user_id', $transaction->user_id)->first();
-
-        if(!empty($transaction) && !empty($wallet)) {
-
-        }
+        /// pagar afiliado
+        Helper::generateGameHistory($user, 'loss', $winMoney, $betMoney, $gameCode, $gameCode, $changeBonus, $providerCode);
 
         return response()->json([
             'status' => 1,
             'user_balance' => $wallet->total_balance
         ]);
+
     }
 
 
@@ -539,7 +350,7 @@ trait WorldSlotTrait
      *
      * @return false
      */
-    private static function CreateTransactionsWorldSlot($playerId, $betReferenceNum, $transactionID, $type, $changeBonus, $amount, $game, $pn)
+    private static function CreateTransactionsWorldslot($playerId, $betReferenceNum, $transactionID, $type, $changeBonus, $amount, $game, $pn)
     {
 
         $order = Order::create([
@@ -549,152 +360,18 @@ trait WorldSlotTrait
             'type'          => $type,
             'type_money'    => $changeBonus,
             'amount'        => $amount,
-            'providers'     => 'worldslot',
+            'providers'     => 'Worldslot',
             'game'          => $game,
             'game_uuid'     => $pn,
             'round_id'      => 1,
         ]);
 
         if($order) {
-            return $order;
+            return $order->id;
         }
 
         return false;
     }
-
-    /**
-     * Create User
-     * Metodo para criar novo usuário
-     *
-     * @return bool
-     */
-    public static function getProviderWorldslot($param)
-    {
-        if(self::getCredentialsWorldSlot()) {
-            $response = Http::post(self::$apiEndpoint.'provider_list', [
-                'agent_code' => self::$agentCode,
-                'agent_token' => self::$agentToken,
-                'game_type' => $param, ///  [slot, casino, pachinko]
-            ]);
-
-            if($response->successful()) {
-                $data = $response->json();
-                if($data['status'] == 1) {
-                    foreach ($data['providers'] as $provider) {
-                        $checkProvider = Provider::where('code', $provider['code'])->where('distribution', 'worldslot')->first();
-                        if(empty($checkProvider)) {
-
-                            $dataProvider = [
-                                'code' => $provider['code'],
-                                'name' => $provider['name'],
-                                'rtp' => 90,
-                                'status' => 1,
-                                'distribution' => 'worldslot',
-                            ];
-
-                            Provider::create($dataProvider);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Create User
-     * Metodo para criar novo usuário
-     *
-     * @return bool
-     */
-    public static function getGamesWorldslot()
-    {
-        if(self::getCredentialsWorldSlot()) {
-            $providers = Provider::where('distribution', 'worldslot')->get();
-            foreach($providers as $provider) {
-                $response = Http::post(self::$apiEndpoint.'/game_list', [
-                    'agent_code' => self::$agentCode,
-                    'agent_token' => self::$agentToken,
-                    'provider_code' => $provider->code
-                ]);
-
-                if($response->successful()) {
-                    $data = $response->json();
-
-                    if(isset($data['games'])) {
-                        foreach ($data['games'] as $game) {
-                            $checkGame = Game::where('provider_id', $provider->id)->where('game_code', $game['game_code'])->first();
-                            if(empty($checkGame)) {
-                                if(!empty($game['banner'])) {
-                                    $image = self::uploadFromUrlWorldSlot($game['banner'], $game['game_code']);
-                                }else{
-                                    $image = null;
-                                }
-
-                                if(!empty($game['game_code']) && !empty($game['game_name'])) {
-                                    $data = [
-                                        'provider_id'   => $provider->id,
-                                        'game_id'       => $game['game_code'],
-                                        'game_code'     => $game['game_code'],
-                                        'game_name'     => $game['game_name'],
-                                        'technology'    => 'html5',
-                                        'distribution'  => 'worldslot',
-                                        'rtp'           => 90,
-                                        'cover'         => $image,
-                                        'status'        => 1,
-                                    ];
-
-                                    Game::create($data);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    /**
-     * @param $url
-     * @return string|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    private static function uploadFromUrlWorldSlot($url, $name = null)
-    {
-        try {
-            $client = new \GuzzleHttp\Client();
-            $response = $client->get($url);
-
-            if ($response->getStatusCode() === 200) {
-                $fileContent = $response->getBody();
-
-                // Extrai o nome do arquivo e a extensão da URL
-                $parsedUrl = parse_url($url);
-                $pathInfo = pathinfo($parsedUrl['path']);
-                //$fileName = $pathInfo['filename'] ?? 'file_' . time(); // Nome do arquivo
-                $fileName  = $name ?? $pathInfo['filename'] ;
-                $extension = $pathInfo['extension'] ?? 'png'; // Extensão do arquivo
-
-                // Monta o nome do arquivo com o prefixo e a extensão
-                $fileName = 'fivers/'.$fileName . '.' . $extension;
-
-                // Salva o arquivo usando o nome extraído da URL
-                Storage::disk('public')->put($fileName, $fileContent);
-
-                return $fileName;
-            }
-
-            return null;
-        } catch (\Exception $e) {
-            return null;
-        }
-    }
-
-
-
-
-
 }
 
 

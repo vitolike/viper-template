@@ -33,7 +33,6 @@ return new class extends Migration
             $table->string('distribution')->comment('O nome do provedor');
             $table->bigInteger('views')->default(0);
             $table->boolean('is_featured')->default(false);
-            $table->boolean('show_home')->default(false);
             $table->timestamps();
         });
     }

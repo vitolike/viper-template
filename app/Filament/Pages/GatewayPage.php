@@ -11,7 +11,6 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
-use Illuminate\Database\Eloquent\Model;
 use Jackiedo\DotenvEditor\Facades\DotenvEditor;
 
 class GatewayPage extends Page
@@ -24,15 +23,6 @@ class GatewayPage extends Page
 
     public ?array $data = [];
     public Gateway $setting;
-
-    /**
-     * @dev @victormsalatiel
-     * @return bool
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     /**
      * @return void
@@ -105,15 +95,6 @@ class GatewayPage extends Page
     public function submit(): void
     {
         try {
-            if(env('APP_DEMO')) {
-                Notification::make()
-                    ->title('Atenção')
-                    ->body('Você não pode realizar está alteração na versão demo')
-                    ->danger()
-                    ->send();
-                return;
-            }
-
             $setting = Gateway::first();
             if(!empty($setting)) {
                 if($setting->update($this->data)) {

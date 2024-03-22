@@ -1,10 +1,11 @@
 <template>
     <NavTopComponent :simple="simple ?? true" />
 
-    <SideBarComponent v-once />
+    
 
-    <div class="sm:ml-64 mt-16">
+   <div class="">
         <div class="relative">
+        
             <slot></slot>
 
         </div>

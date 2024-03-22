@@ -17,7 +17,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Jackiedo\DotenvEditor\Facades\DotenvEditor;
 
@@ -26,15 +25,6 @@ class SettingSpin extends Page
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.setting-spin';
-
-    /**
-     * @dev @victormsalatiel
-     * @return bool
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     /**
      * @return string|Htmlable
@@ -84,15 +74,6 @@ class SettingSpin extends Page
     public function submit(): void
     {
         try {
-            if(env('APP_DEMO')) {
-                Notification::make()
-                    ->title('Atenção')
-                    ->body('Você não pode realizar está alteração na versão demo')
-                    ->danger()
-                    ->send();
-                return;
-            }
-
             $setting = SpinConfigs::first();
             if(!empty($setting)) {
 

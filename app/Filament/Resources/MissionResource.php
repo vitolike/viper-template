@@ -17,7 +17,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MissionResource extends Resource
@@ -32,14 +31,6 @@ class MissionResource extends Resource
 
     protected static ?string $slug = 'centro-missoes';
 
-    /**
-     * @dev @victormsalatiel
-     * @return bool
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     /**
      * @param Form $form

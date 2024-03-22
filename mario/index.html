@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Cash - Colete as Moedas!🍄</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon.gif">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.gif">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon.gif">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+<body>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);  
+    const velo      = +decodeURIComponent(urlParams.get("velo"));
+    const baseurl   = decodeURIComponent(urlParams.get("baseurl")).toString();
+    const token     = decodeURIComponent(urlParams.get("token")).toString();
+    const aposta    = +decodeURIComponent(urlParams.get("aposta"));
+
+</script>
+    <div class="game-board">
+
+
+   
+<style>
+    #meta{
+        margin-top: -35px;
+        font-size: 15pt;
+        color: yellow;
+    }
+    </style>
+        <div class="menu-metasaldo">
+            <div id="score">SALDO: R$<span id="scoreValue">0</span><br></div>
+            <div id="meta">META: R$<span id="metaValue">0</span><br></div>
+        </div>
+
+        <div class="menu-holder">
+            <ul>
+                <li>
+                  <h3 class="title-holder" id="title">Toque para começar...</h3>
+                  <h3 class="end-game hidden" id="end-game">O jogo acabou!</h3>
+                </li>
+            </ul>
+
+            
+        </div>
+
+           
+        <audio id="gameOverSound" src="sounds/gameover.mp3" preload="auto"></audio>
+        <audio id="gameOverSound" src="sounds/background.mp3" preload="auto"></audio>
+
+        <img src="images/gameov.png" class="game-ov hidden">
+        <img src="images/clouds.png" class="clouds">
+        <img src="images/coin.png" class="coin">
+        <img src="images/mario.gif" class="mario">
+        <img src="images/pipe.png" class="pipe">
+        <style>
+            .game-ov{
+                margin-top: 55%;
+                width:100%;
+                position: absolute;
+                margin-right: 100px;
+            }
+        </style>
+        <!-- <img src="images/bird.gif" class="bird">-->
+
+    </div>
+
+    <form id="scoreForm" action="js/salvarscore.php" method="post">
+        <input type="hidden" id="scoreInput" name="score" value="">
+        <input type="hidden" id="apostaInput" name="aposta" value="">
+    </form>
+    
+
+    <form id="saldoForm" class="hidden" action="js/gainscore.php" method="post">
+        <input type="hidden" id="moneyInput" name="money" value="">
+        <input type="hidden" name="meta" id="metaInput" value="">
+        <input type="submit" id="resgatarSaldo" name="saldoRescue" value="Sacar Money">
+    </form>
+          
+</body>
+</html>
+<script src="js/script.js" defer></script>

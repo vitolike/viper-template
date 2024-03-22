@@ -3,26 +3,22 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AffiliateWithdrawResource\Pages;
+use App\Filament\Resources\AffiliateWithdrawResource\RelationManagers;
 use App\Models\AffiliateWithdraw;
+use App\Models\Withdrawal;
+use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AffiliateWithdrawResource extends Resource
 {
     protected static ?string $model = AffiliateWithdraw::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    /**
-     * @dev @victormsalatiel
-     * @return bool
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('afiliado') || auth()->user()->hasRole('admin');
-    }
 
     /**
      * @return string
@@ -104,6 +100,8 @@ class AffiliateWithdrawResource extends Resource
     {
         return [
             'index' => Pages\ListAffiliateWithdraws::route('/'),
+            'create' => Pages\CreateAffiliateWithdraw::route('/create'),
+            'edit' => Pages\EditAffiliateWithdraw::route('/{record}/edit'),
         ];
     }
 }

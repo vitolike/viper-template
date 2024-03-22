@@ -38,8 +38,6 @@ class WalletOverview extends BaseWidget
             ->where('status', 1)
             ->sum('amount');
 
-        $withdrawalQuery->where('status', 1);
-
         if(empty($startDate) && empty($endDate)) {
             $withdrawalQuery->whereMonth('created_at', Carbon::now()->month);
         }else{

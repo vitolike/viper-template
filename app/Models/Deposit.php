@@ -62,7 +62,7 @@ class Deposit extends Model
     }
 
     /**
-     * @return BelongsToMany
+     * @return BelongsTo
      */
     public function users() : BelongsToMany
     {

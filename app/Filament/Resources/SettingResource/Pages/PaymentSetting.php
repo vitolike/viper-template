@@ -5,7 +5,6 @@ namespace App\Filament\Resources\SettingResource\Pages;
 use App\Filament\Resources\SettingResource;
 use App\Models\Setting;
 use AymanAlhattami\FilamentPageWithSidebar\Traits\HasPageSidebar;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,7 +16,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class PaymentSetting extends Page implements HasForms
@@ -38,16 +36,6 @@ class PaymentSetting extends Page implements HasForms
 
     public Setting $record;
     public ?array $data = [];
-
-    /**
-     * @dev @victormsalatiel
-     * @param Model $record
-     * @return bool
-     */
-    public static function canView(Model $record): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     /**
      * @dev victormsalatiel - Meu instagram
@@ -107,22 +95,6 @@ class PaymentSetting extends Page implements HasForms
                 Section::make('Ajuste de Taxas')
                     ->description('Formulário ajustar as taxas da plataforma')
                     ->schema([
-                        TextInput::make('min_deposit')
-                            ->label('Min Deposito')
-                            ->numeric()
-                            ->maxLength(191),
-                        TextInput::make('max_deposit')
-                            ->label('Max Deposito')
-                            ->numeric()
-                            ->maxLength(191),
-                        TextInput::make('min_withdrawal')
-                            ->label('Min Saque')
-                            ->numeric()
-                            ->maxLength(191),
-                        TextInput::make('max_withdrawal')
-                            ->label('Max Saque')
-                            ->numeric()
-                            ->maxLength(191),
                         TextInput::make('initial_bonus')
                             ->label('Bônus Inicial (%)')
                             ->numeric()
@@ -131,40 +103,20 @@ class PaymentSetting extends Page implements HasForms
                         TextInput::make('currency_code')
                             ->label('Moeda')
                             ->maxLength(191),
-//                        Select::make('decimal_format')->options([
-//                            'dot' => 'Dot',
-//                        ]),
-//                        Select::make('currency_position')->options([
-//                            'left' => 'Left',
-//                            'right' => 'Right',
-//                        ]),
-
-                        Group::make()
-                            ->label('Porcentagem de Sub-Afiliados')
-                            ->schema([
-                            TextInput::make('perc_sub_lv1')
-                                ->label('% Sub afiliado LV1')
-                                ->numeric()
-                                ->maxLength(191),
-                            TextInput::make('perc_sub_lv2')
-                                ->label('% Sub afiliado LV2')
-                                ->numeric()
-                                ->maxLength(191),
-                            TextInput::make('perc_sub_lv3')
-                                ->label('% Sub afiliado LV3')
-                                ->numeric()
-                                ->maxLength(191),
-                        ])->columnSpanFull()->columns(3),
+                        Select::make('decimal_format')->options([
+                            'dot' => 'Dot',
+                        ]),
+                        Select::make('currency_position')->options([
+                            'left' => 'Left',
+                            'right' => 'Right',
+                        ]),
                         Toggle::make('suitpay_is_enable')
                             ->label('SuitPay Ativo'),
                         Toggle::make('stripe_is_enable')
                             ->label('Stripe Ativo'),
                         Toggle::make('bspay_is_enable')
                             ->label('BSPay Ativo'),
-                        Toggle::make('disable_spin')
-                            ->label('Disable Spin')
-                        ,
-                    ])->columns(2)
+                    ])
             ])
             ->statePath('data') ;
     }

@@ -1,9 +1,9 @@
 <template>
     <NavTopComponent :simple="false" />
 
-    <SideBarComponent v-once />
+    
 
-    <div class="ml-0 md:ml-64 mt-0 md:mt-16">
+    <div class="">
         <slot></slot>
     </div>
 </template>

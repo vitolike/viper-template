@@ -1,11 +1,12 @@
 <template>
     <NavTopComponent :simple="false" />
 
-    <SideBarComponent v-once />
+   
 
-    <div class="sm:ml-64" :class="'mt-[65px]'">
-
+   <div class="">
         <div class="relative">
+
+        
             <slot></slot>
 
             <FooterComponent v-once />

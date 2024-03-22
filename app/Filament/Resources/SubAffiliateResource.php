@@ -5,14 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SubAffiliateResource\Pages;
 use App\Filament\Resources\SubAffiliateResource\Widgets\SubAffiliateOverview;
 use App\Models\SubAffiliate;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class SubAffiliateResource extends Resource
 {
@@ -25,12 +23,21 @@ class SubAffiliateResource extends Resource
     protected static ?string $modelLabel = 'Sub. Afiliados';
 
     /**
-     * @dev @victormsalatiel
-     * @return bool
+     * @param Form $form
+     * @return Form
      */
-    public static function canAccess(): bool
+    public static function form(Form $form): Form
     {
-        return auth()->user()->hasRole('afiliado');
+        return $form
+            ->schema([
+                Forms\Components\Select::make('user_id')
+                    ->label('Usuários')
+                    ->placeholder('Selecione um usuário')
+                    ->relationship(name: 'user', titleAttribute: 'name')
+                    ->searchable()
+                    ->live()
+                    ->columnSpanFull(),
+            ]);
     }
 
     /**
@@ -39,23 +46,19 @@ class SubAffiliateResource extends Resource
      */
     public static function table(Table $table): Table
     {
-
-        $usersIds = User::where('inviter', auth()->id())->get()->pluck('id');
         return $table
-            ->query(User::query()->whereIn('id', $usersIds))
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->toggleable(isToggledHiddenByDefault: true)
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Usuário')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Data')
                     ->dateTime()
                     ->sortable(),
+                IconColumn::make('status')
+                    ->boolean(),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Atualização')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -68,8 +71,11 @@ class SubAffiliateResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+            ->emptyStateActions([
+
             ]);
     }
 

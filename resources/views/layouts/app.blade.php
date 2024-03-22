@@ -1,4 +1,5 @@
 <!doctype html>
+<html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
     <head>
         <meta charset="UTF-8">
@@ -58,43 +59,7 @@
                 --tw-ring-shadow: 0 0 #0000;
                 --tw-shadow: 0 0 #0000;
                 --tw-shadow-colored: 0 0 #0000;
-
-                --input-primary: {{ $custom['input_primary'] }};
-                --input-primary-dark: {{ $custom['input_primary_dark'] }};
-
-                --carousel-banners: {{ $custom['carousel_banners'] }};
-                --carousel-banners-dark: {{ $custom['carousel_banners_dark'] }};
-
-
-                --sidebar-color: {{ $custom['sidebar_color'] }} !important;
-                --sidebar-color-dark: {{ $custom['sidebar_color_dark'] }} !important;
-
-
-                --navtop-color {{ $custom['navtop_color'] }};
-                --navtop-color-dark: {{ $custom['navtop_color_dark'] }};
-
-
-                --side-menu {{ $custom['side_menu'] }};
-                --side-menu-dark: {{ $custom['side_menu_dark'] }};
-
-                --footer-color {{ $custom['footer_color'] }};
-                --footer-color-dark: {{ $custom['footer_color_dark'] }};
-
-                --card-color {{ $custom['card_color'] }};
-                --card-color-dark: {{ $custom['card_color_dark'] }};
-            }
-            .navtop-color{
-                background-color: {{ $custom['sidebar_color'] }} !important;
-            }
-            :is(.dark .navtop-color) {
-                background-color: {{ $custom['sidebar_color_dark'] }} !important;
-            }
-
-            .bg-base {
-                background-color: {{ $custom['background_base'] }};
-            }
-            :is(.dark .bg-base) {
-                background-color: {{ $custom['background_base_dark'] }};
+                --border-radius: .25rem;
             }
         </style>
 
@@ -106,12 +71,12 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body color-theme="dark" class="bg-base text-gray-800 dark:text-gray-300 ">
-        <div id="viperpro"></div>
+    <body color-theme="dark" class="bg-[#ECEFF1] dark:bg-dark text-gray-800 dark:text-gray-300 ">
+        <div id="amasoft"></div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.0.0/datepicker.min.js"></script>
         <script>
-            window.Livewire?.on('copiado', (texto) => {
+            window.Livewire.on('copiado', (texto) => {
                 navigator.clipboard.writeText(texto).then(() => {
                     Livewire.emit('copiado');
                 });

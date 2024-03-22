@@ -316,7 +316,7 @@ trait VibraTrait
                 if(floatval($wallet->total_balance) >= floatval($amount)) {
 
                     /// verifica se vai ser debitado no bonus ou na carteira
-                    if($wallet->balance_bonus > $amount) {
+                    if($wallet->balance_bonus >= $amount) {
                         //Log::info('PAGOU BONUS');
 
                         if($data['operation'] == 'DEBIT') {

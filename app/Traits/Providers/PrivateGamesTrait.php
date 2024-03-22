@@ -30,17 +30,10 @@ trait PrivateGamesTrait
 
         if(isset($tokenOpen['status']) && $tokenOpen['status']) {
             $user = User::find($tokenOpen['id']);
-            $totalBalance = 0;
-
-            if ($user->is_demo_agent) {
-                $totalBalance = $user->wallet->balance_demo;
-            }else{
-                $totalBalance = $user->wallet->total_balance;
-            }
 
             $data                       = new \stdClass();
             $data->user_name            = $user->name;
-            $data->credit               = $totalBalance;
+            $data->credit               = $user->wallet->balance + $user->wallet->balance_bonus;
             $data->num_line             = $settingGame['num_line'];
             $data->line_num             = $settingGame['line_num'];
             $data->bet_amount           = $settingGame['bet_amount'];
@@ -92,7 +85,6 @@ trait PrivateGamesTrait
      */
     public static function SpinStructure(string $token, array $settingGame, array $pull, array $dataLose, array $dataDemo, array $dataWin, array $dataBonus)
     {
-        $totalBalance = 0;
         $tokenOpen = \Helper::DecToken($token);
 
         if(isset($tokenOpen['status']) && $tokenOpen['status']) {
@@ -161,7 +153,7 @@ trait PrivateGamesTrait
                 }
 
                 /// deduz o saldo apostado
-                if($wallet->balance_bonus > $bet) {
+                if($wallet->balance_bonus >= $bet) {
                     $wallet->decrement('balance_bonus', $bet); /// retira do bonus
                     $changeBonus = 'balance_bonus'; /// define o tipo de transação
                 }elseif($wallet->balance >= $bet) {
@@ -184,14 +176,8 @@ trait PrivateGamesTrait
             $pull['ActiveLines']    = $result[2];
             $pull['DropLineData']   = $result[3];
 
-            if ($user->is_demo_agent) {
-                $totalBalance = $user->wallet->balance_demo;
-            }else{
-                $totalBalance = $user->wallet->total_balance;
-            }
-
             $data = [
-                "credit"            => $totalBalance,
+                "credit"            => ($wallet->balance + $wallet->balance_bonus),
                 "freemode"          => $settingGame['freemode'] ?? false,
                 "jackpot"           => $settingGame['jackpot'],
                 "free_spin"         => $settingGame['free_spin'],
@@ -205,12 +191,13 @@ trait PrivateGamesTrait
             ];
 
             /// não gera historico para demo agent
-            if ($user->is_demo_agent == 0) {
+            if (!$user->is_demo_agent) {
+
                 if(floatval($winAmount) == 0) {
                     Helper::lossRollover($wallet, $betInitial);
                 }
 
-                Helper::generateGameHistory($user->id, floatval($winAmount) == 0 ? 'loss' : 'win', $winAmount, $betInitial, $game->game_name, $game->game_code, $changeBonus, 'source');
+                \Helper::generateGameHistory($user, floatval($winAmount) == 0 ? 'loss' : 'win', $winAmount, $betInitial, $game->game_name, $game->game_code, $changeBonus, 'source');
             }
 
             return response()->json([

@@ -12,7 +12,6 @@ use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 use Filament\Notifications\Notification;
-use Illuminate\Database\Eloquent\Model;
 
 class GamesKeyPage extends Page implements HasForms
 {
@@ -25,15 +24,6 @@ class GamesKeyPage extends Page implements HasForms
     protected static ?string $title = 'Chaves dos Jogos';
 
     protected static ?string $slug = 'chaves-dos-jogos';
-
-    /**
-     * @dev @victormsalatiel
-     * @return bool
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
 
     public ?array $data = [];
@@ -61,41 +51,40 @@ class GamesKeyPage extends Page implements HasForms
     {
         return $form
             ->schema([
-                Section::make('EverGame API')
-                    ->description('Ajustes de credenciais para a EverGame')
+                Section::make('Slotegrator API')
+                    ->description('Ajustes de credenciais para a Slotegrator')
                     ->schema([
-                        TextInput::make('evergame_agent_code')
-                            ->label('Agent Code')
-                            ->placeholder('Digite aqui o Agent Code')
+                        TextInput::make('merchant_url')
+                            ->label('Merchant URL')
+                            ->placeholder('Digite aqui a URL da API')
                             ->maxLength(191),
-                        TextInput::make('evergame_agent_token')
-                            ->label('Agent Token')
-                            ->placeholder('Digite aqui o Agent Token')
+                        TextInput::make('merchant_id')
+                            ->label('Merchant ID')
+                            ->placeholder('Digite aqui a Merchant ID')
                             ->maxLength(191),
-                        TextInput::make('evergame_api_endpoint')
-                            ->label('Api Endpoint')
-                            ->placeholder('Digite aqui a API Endpoint')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
+                        TextInput::make('merchant_key')
+                            ->placeholder('Digite aqui a Merchant Key')
+                            ->label('Merchant Key')
+                            ->maxLength(191),
                     ])
-                    ->columns(2),
+                    ->columns(3),
 
-                Section::make('Games2Api')
-                    ->description('Ajustes de credenciais para a Games2Api')
+                Section::make('Fivers API')
+                    ->description('Ajustes de credenciais para a Fivers')
                     ->schema([
-                        TextInput::make('games2_agent_code')
+                        TextInput::make('agent_code')
                             ->label('Agent Code')
                             ->placeholder('Digite aqui o Agent Code')
                             ->maxLength(191),
-                        TextInput::make('games2_agent_token')
+                        TextInput::make('agent_token')
                             ->label('Agent Token')
                             ->placeholder('Digite aqui o Agent Token')
                             ->maxLength(191),
-                        TextInput::make('games2_agent_secret_key')
+                        TextInput::make('agent_secret_key')
                             ->label('Agent Secret Key')
                             ->placeholder('Digite aqui o Agent Secret Key')
                             ->maxLength(191),
-                        TextInput::make('games2_api_endpoint')
+                        TextInput::make('api_endpoint')
                             ->label('Api Endpoint')
                             ->placeholder('Digite aqui a API Endpoint')
                             ->maxLength(191)
@@ -103,8 +92,8 @@ class GamesKeyPage extends Page implements HasForms
                     ])
                     ->columns(3),
 
-                Section::make('World Slot API')
-                    ->description('Ajustes de credenciais para a World Slot')
+                Section::make('Worldslot API')
+                    ->description('Ajustes de credenciais para a Worldslot')
                     ->schema([
                         TextInput::make('worldslot_agent_code')
                             ->label('Agent Code')
@@ -125,26 +114,6 @@ class GamesKeyPage extends Page implements HasForms
                             ->columnSpanFull(),
                     ])
                     ->columns(3),
-
-                Section::make('Slotegrator API')
-                    ->description('Ajustes de credenciais para a Slotegrator')
-                    ->schema([
-                        TextInput::make('merchant_url')
-                            ->label('Merchant URL')
-                            ->placeholder('Digite aqui a URL da API')
-                            ->maxLength(191),
-                        TextInput::make('merchant_id')
-                            ->label('Merchant ID')
-                            ->placeholder('Digite aqui a Merchant ID')
-                            ->maxLength(191),
-                        TextInput::make('merchant_key')
-                            ->placeholder('Digite aqui a Merchant Key')
-                            ->label('Merchant Key')
-                            ->maxLength(191),
-                    ])
-                    ->columns(3),
-
-
 
                 Section::make('Salsa API')
                     ->description('Ajustes de credenciais para a Salsa. Site do provedor: https://salsatechnology.com/')
@@ -178,29 +147,6 @@ class GamesKeyPage extends Page implements HasForms
                     ])
                     ->columns(2),
 
-                Section::make('Fivers API')
-                    ->description('Ajustes de credenciais para a Fivers')
-                    ->schema([
-                        TextInput::make('agent_code')
-                            ->label('Agent Code')
-                            ->placeholder('Digite aqui o Agent Code')
-                            ->maxLength(191),
-                        TextInput::make('agent_token')
-                            ->label('Agent Token')
-                            ->placeholder('Digite aqui o Agent Token')
-                            ->maxLength(191),
-                        TextInput::make('agent_secret_key')
-                            ->label('Agent Secret Key')
-                            ->placeholder('Digite aqui o Agent Secret Key')
-                            ->maxLength(191),
-                        TextInput::make('api_endpoint')
-                            ->label('Api Endpoint')
-                            ->placeholder('Digite aqui a API Endpoint')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(3),
-
             ])
             ->statePath('data');
     }
@@ -212,15 +158,6 @@ class GamesKeyPage extends Page implements HasForms
     public function submit(): void
     {
         try {
-            if(env('APP_DEMO')) {
-                Notification::make()
-                    ->title('Atenção')
-                    ->body('Você não pode realizar está alteração na versão demo')
-                    ->danger()
-                    ->send();
-                return;
-            }
-
             $setting = GamesKey::first();
             if(!empty($setting)) {
                 if($setting->update($this->data)) {

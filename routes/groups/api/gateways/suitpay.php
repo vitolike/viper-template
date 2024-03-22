@@ -2,12 +2,6 @@
 use App\Http\Controllers\Gateway\SuitPayController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('suitpay')
-    ->group(function ()
-    {
-        Route::post('qrcode-pix', [SuitPayController::class, 'getQRCodePix']);
-        Route::post('consult-status-transaction', [SuitPayController::class, 'consultStatusTransactionPix']);
-    });
-
-
-
+Route::post('suitpay/qrcode-pix', [SuitPayController::class, 'getQRCodePix']);
+Route::post('suitpay/consult-status-transaction', [SuitPayController::class, 'consultStatusTransactionPix']);
+Route::get('suitpay/withdrawal/{id}', [SuitPayController::class, 'withdrawalFromModal'])->name('suitpay.withdrawal');

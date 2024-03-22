@@ -43,8 +43,7 @@ class Game extends Model
         'rtp',
         'distribution',
         'views',
-        'is_featured',
-        'show_home'
+        'is_featured'
     ];
 
     protected $appends = ['hasFavorite', 'totalFavorites', 'hasLike', 'totalLikes', 'dateHumanReadable', 'createdAt' ];

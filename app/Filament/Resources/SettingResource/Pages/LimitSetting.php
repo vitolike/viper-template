@@ -17,7 +17,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class LimitSetting extends Page implements HasForms
@@ -27,16 +26,6 @@ class LimitSetting extends Page implements HasForms
     protected static string $resource = SettingResource::class;
 
     protected static string $view = 'filament.resources.setting-resource.pages.limit-setting';
-
-    /**
-     * @dev @victormsalatiel
-     * @param Model $record
-     * @return bool
-     */
-    public static function canView(Model $record): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     /**
      * @return string|Htmlable

@@ -236,30 +236,16 @@ trait FiversTrait
         $data = $request->all();
         $wallet = Wallet::where('user_id', $request->user_code)->where('active', 1)->first();
 
-        if(!empty($wallet) && isset($data['slot'])) {
+        if(!empty($wallet)) {
             if($data['game_type'] == 'slot' && isset($data['slot'])) {
 
                 $game = Game::where('game_code', $data['slot']['game_code'])->first();
 
                 /// verificar se usuário tem desafio ativo
                 self::CheckMissionExist($request->user_code, $game, 'fivers');
-                $transaction = self::PrepareTransactions(
-                    $wallet,
-                    $request->user_code,
-                    $data['slot']['txn_id'],
-                    $data['slot']['bet_money'],
-                    $data['slot']['win_money'],
-                    $data['slot']['game_code'],
-                    $data['slot']['provider_code']
-                );
-                if($transaction) {
 
-                }else{
-                    return response()->json([
-                        'status' => 0,
-                        'msg' => 'INSUFFICIENT_USER_FUNDS'
-                    ]);
-                }
+                $winMoney = (floatval($data['slot']['win_money']) - floatval($data['slot']['bet_money']));
+                return self::PrepareTransactions($wallet, $request->user_code, $data['slot']['txn_id'], $data['slot']['bet_money'], $winMoney, $data['slot']['game_code'], $data['slot']['provider_code']);
             }
 
             if($data['game_type'] == 'live' &&  isset($data['live'])) {
@@ -267,32 +253,9 @@ trait FiversTrait
 
                 /// verificar se usuário tem desafio ativo
                 self::CheckMissionExist($request->user_code, $game, 'fivers');
-                $transaction =  self::PrepareTransactions(
-                    $wallet,
-                    $request->user_code,
-                    $data['live']['txn_id'],
-                    $data['live']['bet_money'],
-                    $data['live']['win_money'],
-                    $data['live']['game_code'],
-                    $data['live']['provider_code']
-                );
 
-                if($transaction) {
-
-                }else{
-                    return response()->json([
-                        'status' => 0,
-                        'msg' => 'INSUFFICIENT_USER_FUNDS'
-                    ]);
-                }
+                return self::PrepareTransactions($wallet, $request->user_code, $data['live']['txn_id'], $data['live']['bet_money'], $data['live']['win_money'], $data['live']['game_code'], $data['live']['provider_code']);
             }
-        }
-
-        if(!empty($wallet) && isset($data['msg']) && $data['msg'] == 'Money change during the game.') {
-            return response()->json([
-                'status' => 1,
-                'user_balance' => $wallet->total_balance
-            ]);
         }
     }
 
@@ -313,75 +276,81 @@ trait FiversTrait
     {
         $user = User::find($wallet->user_id);
 
-        if(!empty($user)) {
-            $typeAction  = 'bet';
-            $changeBonus = 'balance';
-            $bet = floatval($betMoney);
+        $typeAction  = 'bet';
+        $changeBonus = 'balance';
+        $bet = floatval($betMoney);
 
-            /// deduz o saldo apostado
-            if($wallet->balance_bonus > $bet) {
-                $wallet->decrement('balance_bonus', $bet); /// retira do bonus
-                $changeBonus = 'balance_bonus'; /// define o tipo de transação
-            }elseif($wallet->balance >= $bet) {
-                $wallet->decrement('balance', $bet); /// retira do saldo depositado
-                $changeBonus = 'balance'; /// define o tipo de transação
-            }elseif($wallet->balance_withdrawal >= $bet) {
-                $wallet->decrement('balance_withdrawal', $bet); /// retira do saldo liberado pra saque
-                $changeBonus = 'balance_withdrawal'; /// define o tipo de transação
-            }else{
-                return false;
-            }
+        /// deduz o saldo apostado
+        if($wallet->balance_bonus >= $bet) {
+            $wallet->decrement('balance_bonus', $bet); /// retira do bonus
+            $changeBonus = 'balance_bonus'; /// define o tipo de transação
+        }elseif($wallet->balance >= $bet) {
+            $wallet->decrement('balance', $bet); /// retira do saldo depositado
+            $changeBonus = 'balance'; /// define o tipo de transação
+        }elseif($wallet->balance_withdrawal >= $bet) {
+            $wallet->decrement('balance_withdrawal', $bet); /// retira do saldo liberado pra saque
+            $changeBonus = 'balance_withdrawal'; /// define o tipo de transação
+        }
 
-            if(floatval($winMoney) > $bet) {
-                $typeAction = 'win';
-                $transaction = self::CreateTransactions($userCode, time(), $txnId, $typeAction, $changeBonus, $bet, 'fivers', $gameCode, $gameCode);
-
-                if(!empty($transaction)) {
-
-                    /// salvar transação GGR
-                    GGRGamesFiver::create([
-                        'user_id' => $userCode,
-                        'provider' => $providerCode,
-                        'game' => $gameCode,
-                        'balance_bet' => $betMoney,
-                        'balance_win' => $winMoney,
-                        'currency' => $wallet->currency
-                    ]);
-
-                    /// pagar afiliado
-                    Helper::generateGameHistory($user->id, $typeAction, $winMoney, $bet, $changeBonus, $txnId);
-
-                    return response()->json([
-                        'status' => 1,
-                        'user_balance' => $wallet->total_balance
-                    ]);
-                }
-            }
-
-            /// criar uma transação
-            $checkTransaction = Order::where('transaction_id', $txnId)->first();
-            if(empty($checkTransaction)) {
-                $checkTransaction = self::CreateTransactions($userCode, time(), $txnId, $typeAction, $changeBonus, $bet, 'fivers', $gameCode, $gameCode);
-            }
+        if(floatval($winMoney) > $bet) {
+            $typeAction = 'win';
+            self::CreateTransactions($userCode, time(), $txnId, $typeAction, $changeBonus, $betMoney, $gameCode, $gameCode);
 
             /// salvar transação GGR
             GGRGamesFiver::create([
                 'user_id' => $userCode,
                 'provider' => $providerCode,
                 'game' => $gameCode,
-                'balance_bet' => $bet,
-                'balance_win' => 0,
-                'currency' => $wallet->currencyS
+                'balance_bet' => $betMoney,
+                'balance_win' => $winMoney,
+                'currency' => $wallet->currency
             ]);
 
-            Helper::lossRollover($wallet, $bet);
-            Helper::generateGameHistory($user->id, $typeAction, $winMoney, $bet, $changeBonus, $checkTransaction->transaction_id);
+            /// pagar afiliado
+            Helper::generateGameHistory($user, $typeAction, $winMoney, $betMoney, $gameCode, $gameCode, $changeBonus, $providerCode);
 
             return response()->json([
                 'status' => 1,
                 'user_balance' => $wallet->total_balance
             ]);
         }
+
+        /// criar uma transação
+        $checkTransaction = Order::where('transaction_id', $txnId)->first();
+        if(empty($checkTransaction)) {
+            self::CreateTransactions($userCode, time(), $txnId, $typeAction, $changeBonus, $betMoney, $gameCode, $gameCode);
+        }
+
+        /// salvar transação GGR
+        GGRGamesFiver::create([
+            'user_id' => $userCode,
+            'provider' => $providerCode,
+            'game' => $gameCode,
+            'balance_bet' => $betMoney,
+            'balance_win' => 0,
+            'currency' => $wallet->currencyS
+        ]);
+
+        Helper::lossRollover($wallet, $betMoney);
+
+        /// pagar afiliado
+        Helper::generateGameHistory($user, 'loss', $winMoney, $betMoney, $gameCode, $gameCode, $changeBonus, $providerCode);
+
+        return response()->json([
+            'status' => 1,
+            'user_balance' => $wallet->total_balance
+        ]);
+
+    }
+
+    private static function SetGameStart($request)
+    {
+
+    }
+
+    private static function SetGameEnd($request)
+    {
+
     }
 
     /**
@@ -396,6 +365,10 @@ trait FiversTrait
                 return self::GetBalanceInfo($request);
             case "transaction":
                 return self::SetTransaction($request);
+            case "game_start":
+                return self::SetGameStart($request);
+            case "game_end":
+                return self::SetGameEnd($request);
             default:
                 return response()->json(['status' => 0]);
         }
@@ -409,7 +382,7 @@ trait FiversTrait
      *
      * @return false
      */
-    private static function CreateTransactions($playerId, $betReferenceNum, $transactionID, $type, $changeBonus, $amount, $providers, $game, $pn)
+    private static function CreateTransactions($playerId, $betReferenceNum, $transactionID, $type, $changeBonus, $amount, $game, $pn)
     {
 
         $order = Order::create([
@@ -419,14 +392,14 @@ trait FiversTrait
             'type'          => $type,
             'type_money'    => $changeBonus,
             'amount'        => $amount,
-            'providers'     => $providers,
+            'providers'     => 'Fivers',
             'game'          => $game,
             'game_uuid'     => $pn,
             'round_id'      => 1,
         ]);
 
         if($order) {
-            return $order;
+            return $order->id;
         }
 
         return false;

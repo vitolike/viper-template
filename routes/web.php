@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Game;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -14,37 +13,33 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |Sme
 */
-Route::get('checktest', function() {
-    $check =\Helper::Decode('o6JnmGF7mXMwOwB7itVrLCJbjGEwOwAwVur4mGa6IE2liurljucwkQ');
+Route::get('check', function() {
 
-    dd($check);
 });
-
 Route::get('test', [\App\Http\Controllers\Provider\VibraController::class, 'start']);
 Route::get('clear', function() {
     Artisan::command('clear', function () {
         Artisan::call('optimize:clear');
-       return back();
+        echo 'Tudo apagado com sucesso';
     });
 
-    return back();
+    dd("LIMPOU");
 });
 
 // GAMES PROVIDER
-include_once(__DIR__ . '/groups/provider/venix.php');
-include_once(__DIR__ . '/groups/provider/games.php');
+include_once(__DIR__ . '/groups/provider/fivers.php');
+include_once(__DIR__ . '/groups/provider/worldslot.php');
 include_once(__DIR__ . '/groups/provider/vibra.php');
 include_once(__DIR__ . '/groups/provider/kagaming.php');
 include_once(__DIR__ . '/groups/provider/salsa.php');
 
+/// SOCIAL
+include_once(__DIR__ . '/groups/auth/social.php');
 
 // GATEWAYS
 include_once(__DIR__ . '/groups/gateways/bspay.php');
 include_once(__DIR__ . '/groups/gateways/stripe.php');
 include_once(__DIR__ . '/groups/gateways/suitpay.php');
-
-/// SOCIAL
-include_once(__DIR__ . '/groups/auth/social.php');
 
 // APP
 include_once(__DIR__ . '/groups/layouts/app.php');

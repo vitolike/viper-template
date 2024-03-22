@@ -2,14 +2,16 @@
 
 namespace App\Traits\Commands\Games;
 
+use App\Models\WorldslotGame;
 use App\Models\Game;
+use App\Models\GameProvider;
 use App\Models\GamesKey;
 use App\Models\Provider;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-trait WorldSlotGamesCommandTrait
+trait WorldslotGamesCommandTrait
 {
     /**
      * @var string
@@ -40,35 +42,19 @@ trait WorldSlotGamesCommandTrait
      *
      * @return bool
      */
-    public static function getProvider($param)
+    public static function getProvider()
     {
         if(self::getCredentials()) {
-            $response = Http::post(self::$apiEndpoint.'provider_list', [
+            $response = Http::post(self::$apiEndpoint."/provider_list", [
                 'agent_code' => self::$agentCode,
-                'agent_token' => self::$agentToken,
-                'game_type' => $param, ///  [slot, casino, pachinko]
+                'agent_token' => self::$agentToken
             ]);
 
             if($response->successful()) {
                 $data = $response->json();
-                dd($data);
-                if($data['status'] == 1) {
-                    foreach ($data['providers'] as $provider) {
-                        dd($provider);
-                        $checkProvider = Provider::where('code', $provider['code'])->where('distribution', 'worldslot')->first();
-                        if(empty($checkProvider)) {
 
-                            $dataProvider = [
-                                'code' => $provider['code'],
-                                'name' => $provider['name'],
-                                'rtp' => 90,
-                                'status' => 1,
-                                'distribution' => 'worldslot',
-                            ];
-
-                            Provider::create($dataProvider);
-                        }
-                    }
+                foreach ($data['providers'] as $provider) {
+                    GameProvider::create($provider);
                 }
             }
         }
@@ -84,36 +70,41 @@ trait WorldSlotGamesCommandTrait
     public static function getGames()
     {
         if(self::getCredentials()) {
-            $providers = Provider::where('distribution', 'worldslot')->get();
+            $providers = Provider::get();
             foreach($providers as $provider) {
-                $response = Http::post(self::$apiEndpoint.'/game_list', [
-                    'agent_code' => self::$agentCode,
-                    'agent_token' => self::$agentToken,
-                    'provider_code' => $provider->code
+                $response = Http::post(self::$apiEndpoint."/game_list", [
+                    "agent_code"=> "lucas777x777",
+                    "agent_token"=> "226453ad9d5edaa107626a3fcbda05cf",
+                    "provider_code"=> "$provider->code",
+                    "lang"=> "en"
                 ]);
+
+                echo '"agent_code"=> "lucas777x777",\n
+                "agent_token"=> "226453ad9d5edaa107626a3fcbda05cf",\n
+                "provider_code"=> "$provider->code",\n
+                "lang"=> "en"\n\n';
 
                 if($response->successful()) {
                     $data = $response->json();
 
                     if(isset($data['games'])) {
                         foreach ($data['games'] as $game) {
-                            $checkGame = Game::where('provider_id', $provider->id)->where('game_code', $game['game_code'])->first();
-                            if(empty($checkGame)) {
-                                $image = self::uploadFromUrl($game['banner'], $game['game_code']);
-                                $data = [
-                                    'provider_id'   => $provider->id,
-                                    'game_id'       => $game['game_code'],
-                                    'game_code'     => $game['game_code'],
-                                    'game_name'     => $game['game_name'],
-                                    'technology'    => 'html5',
-                                    'distribution'  => 'worldslot',
-                                    'rtp'           => 90,
-                                    'cover'         => $image,
-                                    'status'        => 1,
-                                ];
+                            $image = self::uploadFromUrl($game['banner'], $game['game_code']);
+                            $data = [
+                                'provider_id'   => $provider->id,
+                                'game_id'       => $game['game_code'],
+                                'game_code'     => $game['game_code'],
+                                'game_name'     => $game['game_name'],
+                                'technology'    => 'html5',
+                                'distribution'  => 'worldslot',
+                                'rtp'           => 90,
+                                'cover'         => $image,
+                                'status'        => 1,
+                            ];
 
-                                Game::create($data);
-                            }
+                            Game::create($data);
+
+                            echo "jogo criado com sucesso \n";
                         }
                     }
                 }
@@ -121,7 +112,7 @@ trait WorldSlotGamesCommandTrait
         }
     }
 
-
+ 
     /**
      * @param $url
      * @return string|null
@@ -144,7 +135,7 @@ trait WorldSlotGamesCommandTrait
                 $extension = $pathInfo['extension'] ?? 'png'; // Extensão do arquivo
 
                 // Monta o nome do arquivo com o prefixo e a extensão
-                $fileName = 'fivers/'.$fileName . '.' . $extension;
+                $fileName = 'worldslot/'.$fileName . '.' . $extension;
 
                 // Salva o arquivo usando o nome extraído da URL
                 Storage::disk('public')->put($fileName, $fileContent);

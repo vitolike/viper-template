@@ -2,11 +2,11 @@
     <BaseLayout>
         <LoadingComponent :isLoading="isLoading">
             <div class="text-center">
-                <span>{{ $t('Loading awards') }}</span>
+                <span>{{ $t('...') }}</span>
             </div>
         </LoadingComponent>
 
-        <div v-if="!isLoading" class="md:w-4/6 2xl:w-4/6 mx-auto my-16 p-4">
+        <div v-if="!isLoading" class="md:w-5/6 2xl:w-5/6 mx-auto my-16 p-4">
             <HeaderComponent>
                 <template #header>
                     {{ $t('List of') }} <span class=" bg-blue-100 text-blue-800 text-2xl font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-2">{{ $t('Awards') }}</span>

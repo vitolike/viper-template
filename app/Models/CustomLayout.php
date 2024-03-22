@@ -36,31 +36,6 @@ class CustomLayout extends Model
         'sub_text_color',
         'placeholder_color',
         'background_color',
-
-        'background_base',
-        'background_base_dark',
-
-        'input_primary',
-        'input_primary_dark',
-
-        'carousel_banners',
-        'carousel_banners_dark',
-
-        'sidebar_color',
-        'sidebar_color_dark',
-
-        'navtop_color',
-        'navtop_color_dark',
-
-        'side_menu',
-        'side_menu_dark',
-
-        'footer_color',
-        'footer_color_dark',
-
-        'card_color',
-        'card_color_dark',
-
         'border_radius',
         'custom_css',
         'custom_js',

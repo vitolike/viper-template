@@ -75,53 +75,48 @@ class Core
 
     /**
      * @dev victormsalatiel - Corra de golpista, me chame no instagram
-     * @param $userId
+     * @param $wallet
      * @param $changeBonus
      * @param $WinAmount
      * @return void
      */
-    public static function payWithRollover($userId, $changeBonus, $WinAmount): void
+    public static function payWithRollover($wallet, $changeBonus, $WinAmount): void
     {
-        $wallet = Wallet::where('user_id', $userId)->first();
-
-        if(!empty($wallet)) {
-
-            /// verificar se é bonus ou balance
-            if($changeBonus == 'balance_bonus') {
-                /// verificar a quantidade de rollover
-                if($wallet->balance_bonus_rollover <= 0 || empty($wallet->balance_bonus_rollover)) {
-                    $wallet->increment('balance_withdrawal', $WinAmount);
-                }else{
-                    /// verifica se o valor do rollover é maior que o ganho, se sim, decrementa o valor
-                    if($wallet->balance_bonus_rollover > $WinAmount) {
-                        $wallet->decrement('balance_bonus_rollover', $WinAmount);
-                        $wallet->increment('balance_bonus', $WinAmount);
-                    }else{
-                        /// caso contrario define como zero.
-                        $wallet->update(['balance_bonus_rollover' => 0]);
-
-                        /// converte em saldo real
-                        $wallet->increment('balance_withdrawal', $WinAmount);
-                    }
-                }
+        /// verificar se é bonus ou balance
+        if($changeBonus == 'balance_bonus') {
+            /// verificar a quantidade de rollover
+            if($wallet->balance_bonus_rollover <= 0 || empty($wallet->balance_bonus_rollover)) {
+                $wallet->increment('balance_withdrawal', $WinAmount);
             }else{
-                if(empty($wallet->balance_deposit_rollover) || $wallet->balance_deposit_rollover <= 0) {
-                    /// pagando o ganhos na carteira de saque
-                    $wallet->increment('balance_withdrawal', $WinAmount);
+                /// verifica se o valor do rollover é maior que o ganho, se sim, decrementa o valor
+                if($wallet->balance_bonus_rollover >= $WinAmount) {
+                    $wallet->decrement('balance_bonus_rollover', $WinAmount);
+                    $wallet->increment('balance_bonus', $WinAmount);
                 }else{
-                    /// verifica se o valor do rollover é maior que o ganho, se sim, decrementa o valor
-                    if($wallet->balance_deposit_rollover >= $WinAmount) {
-                        $wallet->decrement('balance_deposit_rollover', $WinAmount);
+                    /// caso contrario define como zero.
+                    $wallet->update(['balance_bonus_rollover' => 0]);
 
-                        // volta com o dinheiro para jogar
-                        $wallet->increment('balance', $WinAmount);
-                    }else{
-                        /// caso contrario define como zero.
-                        $wallet->update(['balance_deposit_rollover' => 0]);
+                    /// converte em saldo real
+                    $wallet->increment('balance_withdrawal', $WinAmount);
+                }
+            }
+        }else{
+            if($wallet->balance_deposit_rollover <= 0 || empty($wallet->balance_deposit_rollover)) {
+                /// pagando o ganhos na carteira de saque
+                $wallet->increment('balance_withdrawal', $WinAmount);
+            }else{
+                /// verifica se o valor do rollover é maior que o ganho, se sim, decrementa o valor
+                if($wallet->balance_deposit_rollover >= $WinAmount) {
+                    $wallet->decrement('balance_deposit_rollover', $WinAmount);
 
-                        /// converte em saldo real
-                        $wallet->increment('balance_withdrawal', $WinAmount);
-                    }
+                    // volta com o dinheiro para jogar
+                    $wallet->increment('balance', $WinAmount);
+                }else{
+                    /// caso contrario define como zero.
+                    $wallet->update(['balance_deposit_rollover' => 0]);
+
+                    /// converte em saldo real
+                    $wallet->increment('balance_withdrawal', $WinAmount);
                 }
             }
         }
@@ -139,47 +134,12 @@ class Core
         return [
             'source' => 'Código Fonte',
             'slotegrator' => 'Slotegrator',
-            'evergame' => 'Evergame',
             'salsa' => 'Salsa',
             'fivers' => 'Fivers',
+            'worldslot' => 'Worldslot',
             'kagaming' => 'KaGaming',
             'vibra_gaming' => 'Vibra Gaming',
-            'worldslot' => 'Worldslot',
-            'games2_api' => 'Games2Api'
         ];
-    }
-
-
-    /**
-     * @param $order
-     * @return string
-     */
-    public static function getTypeTransactionOrder($order)
-    {
-        switch ($order) {
-            case 'balance_bonus':
-                return 'Saldo Bônus';
-
-            case 'balance':
-                return 'Saldo Depósito';
-
-            case 'balance_withdrawal':
-                return 'Saldo de Saque';
-
-        }
-    }
-
-    /**
-     * @param $order
-     * @return string
-     */
-    public static function getTypeOrder($order)
-    {
-        if($order == 'win') {
-            return 'Vitória';
-        }
-
-        return 'Perda';
     }
 
     /**
@@ -435,7 +395,7 @@ class Core
      * Como revshare e CPA.
      *
      * @dev victormsalatiel - Corra de golpista, me chame no instagram
-     * @param $userId
+     * @param User $user
      * @param $type
      * @param $amount
      * @param $nameGame
@@ -443,155 +403,51 @@ class Core
      * @param $changeBonus
      * @return mixed
      */
-    public static function generateGameHistory($userId, $type, $win, $bet, $changeBonus, $tx)
+    public static function generateGameHistory(User $user, $type, $amount, $bet, $nameGame, $gameId, $changeBonus, $provider)
     {
-        $user       = User::find($userId);
+        $setting    = self::getSetting();
         $affiliate  = User::find($user->inviter);
+        $wallet     = Wallet::where('user_id', $user->inviter)->where('active', 1)->first();
 
         /// pagar afiliado
         if($type == 'loss' && !empty($user->inviter)) {
+            $setting = self::getSetting();
             $affiliate = User::find($user->inviter);
-            self::PayLoss($user, $affiliate, $bet, $changeBonus);
-            \Log::info('PayLoss Afiliado '.$bet);
 
-        }elseif($type == 'win' && !empty($user->inviter)){
-            self::PayWin($user, $affiliate, $type, $win, $changeBonus);
-            \Log::info('PayWin Afiliado '.$win);
-        }
+            if(!empty($affiliate)) {
+                $affHistoryRevshare = AffiliateHistory::where('user_id', $user->id)
+                    ->where('commission_type', 'revshare')
+                    //->where('deposited', 1)
+                    ->where('status', 0)
+                    ->first();
 
-        /// pagando o premio
-        if (!$user->is_demo_agent) {
-            if(floatval($win) > 0) {
+                if(!empty($affHistoryRevshare)) {
+                    /// verificar qual revshare pagar, o fake ou o padrão
+                    $revshare = $affiliate->affiliate_revenue_share_fake ?? $affiliate->affiliate_revenue_share;
 
-                /// atualiza os ganhos da vitoria
-                self::payWithRollover($userId, $changeBonus, $win); /// verifica o rollover
-            }
-        }
+                    $lossPercentage = self::porcentagem_xn($revshare, $bet); /// calcula a porcentagem da perda, com o valor apostado na variavel $bet
+                    $ngr = self::porcentagem_xn($setting->ngr_percent, $lossPercentage); /// calcula a porcentagem do ngr
 
-        if($type == 'win') {
-            \Log::info('PayWin Final: '.$win);
-            $transaction = Order::where('transaction_id', $tx)->first();
-            if(!empty($transaction)) {
-                if($transaction->update(['status' => 1, 'type' => $type])) {
-                    return true;
+                    $commissionPay = ($lossPercentage - $ngr); /// subtrai o ngr
+
+                    /// salva o historico de perdas
+                    $affHistoryRevshare->increment('losses', 1);
+                    $affHistoryRevshare->increment('losses_amount', $commissionPay);
+
+                    /// verificar a arvore de subafiliados
+
+
+                    $affiliate->wallet->increment('refer_rewards', $commissionPay); /// afiliado ganha a comissão
+
+                    $affHistoryRevshare->increment('commission', $commissionPay); /// valor pago de comissão
+                    $affHistoryRevshare->increment('commission_paid', $commissionPay); /// valor pago de comissão historico
                 }
-
-                return false;
-            }
-        }else{
-            \Log::info('PayLoss Final: '.$bet);
-            $transaction = Order::where('transaction_id', $tx)->first();
-            if(!empty($transaction)) {
-                if($transaction->update(['status' => 1, 'type' => $type])) {
-                    return false;
-                }
-
-                return false;
             }
         }
-    }
-
-    /**
-     * PayLoss
-     *
-     * @param $user
-     * @param $affiliate
-     * @param $bet
-     * @param $changeBonus
-     * @return float|int
-     */
-    private static function PayLoss($user, $affiliate, $bet, $changeBonus)
-    {
-        $setting    = self::getSetting();
-
-        if(!empty($affiliate)) {
-            $affHistoryRevshare = AffiliateHistory::where('user_id', $user->id)
-                ->where('commission_type', 'revshare')
-                //->where('deposited', 1)
-                ->where('status', 0)
-                ->first();
-
-            if(!empty($affHistoryRevshare) && in_array($changeBonus, ['balance', 'balance_withdrawal'])) {
-
-                /// verificar qual revshare pagar, o fake ou o padrão
-                $revshare = $affiliate->affiliate_revenue_share_fake ?? $affiliate->affiliate_revenue_share;
-
-                $lossPercentage = self::porcentagem_xn($revshare, $bet); /// calcula a porcentagem da perda, com o valor apostado na variavel $bet
-                $ngr = self::porcentagem_xn($setting->ngr_percent, $lossPercentage); /// calcula a porcentagem do ngr
-
-                $commissionPay = ($lossPercentage - $ngr); /// subtrai o ngr
-
-                /// salva o historico de perdas
-                $affHistoryRevshare->increment('losses', 1);
-                $affHistoryRevshare->increment('losses_amount', $commissionPay);
-
-                /// verificar a arvore de subafiliados
-
-                /// level 1
-                if(!empty($affiliate->inviter)) {
-                    $affiliatelv1 = User::find($affiliate->inviter);
-                    if(!empty($affiliatelv1)) {
-
-                        /// pagando lvl1
-                        $percentageLvl1 = self::porcentagem_xn($setting->perc_sub_lv1, $commissionPay); /// calcula a porcentagem da perda, com o valor apostado na variavel $bet
-                        $affiliatelv1->wallet->increment('refer_rewards', $percentageLvl1);
-
-
-                        $commissionPay = ($commissionPay - $percentageLvl1);
-
-                        /// level 2
-                        if(!empty($affiliatelv1->inviter)) {
-                            $affiliatelv2 = User::find($affiliatelv1->inviter);
-                            if(!empty($affiliatelv2)) {
-                                /// pagando lvl2
-                                $percentageLvl2 = self::porcentagem_xn($setting->perc_sub_lv2, $commissionPay); /// calcula a porcentagem da perda, com o valor apostado na variavel $bet
-                                $affiliatelv2->wallet->increment('refer_rewards', $percentageLvl2);
-
-                                $commissionPay = ($commissionPay - $percentageLvl2);
-
-                                /// level 3
-                                $affiliatelv3 = User::find($affiliatelv2->inviter);
-                                if(!empty($affiliatelv3)) {
-                                    /// pagando lvl3
-                                    $percentageLvl3 = self::porcentagem_xn($setting->perc_sub_lv3, $commissionPay); /// calcula a porcentagem da perda, com o valor apostado na variavel $bet
-                                    $affiliatelv3->wallet->increment('refer_rewards', $percentageLvl3);
-
-                                    $commissionPay = ($commissionPay - $percentageLvl3);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                /// Pagando o afiliado principal
-                $affiliate->wallet->increment('refer_rewards', $commissionPay); /// afiliado ganha a comissão
-                $affHistoryRevshare->increment('commission', $commissionPay); /// valor pago de comissão
-                $affHistoryRevshare->increment('commission_paid', $commissionPay); /// valor pago de comissão historico
-
-                return ($bet - $commissionPay);
-            }
-        }
-    }
-
-    /**
-     * @param $user
-     * @param $affiliate
-     * @param $type
-     * @param $amount
-     * @param $changeBonus
-     * @return float|int|void
-     */
-    private static function PayWin($user, $affiliate, $type, $amount, $changeBonus)
-    {
-
-        $wallet     = Wallet::where('user_id', $user->inviter)->where('active', 1)->first();
-        $setting    = self::getSetting();
 
         /// subtrair afiliado ganhos
-        if($setting->revshare_reverse) {
-            if($type == 'win' && !empty($user->inviter) && in_array($changeBonus, ['balance', 'balance_withdrawal'])) {
-                \Log::info('REVSHARE NEGATIVO AQUI');
-
+        if($setting->revshare_reverse == 1) {
+            if($type == 'win' && !empty($user->inviter)) {
                 if(!empty($affiliate)) {
                     $affHistoryRevshare = AffiliateHistory::where('user_id', $user->id)
                         ->where('commission_type', 'revshare')
@@ -601,22 +457,37 @@ class Core
 
                     if(!empty($affHistoryRevshare)) {
                         /// verificar qual revshare pagar, o fake ou o padrão
-
-                        $revshare = $affiliate->affiliate_revenue_share_fake ?? $affiliate->affiliate_revenue_share;
-
+                        $revshare = $affiliate->affiliate_revenue_share;
                         $commissionSub = self::porcentagem_xn($revshare, $amount); /// calcula a porcentagem da perda, com o valor ganhado na variavel $amount
                         $wallet->decrement('refer_rewards', $commissionSub); /// remove do afiliado o valor perdido pelo apostador
+                        ///
 
-                        // \Log::info('REVSHARE NEGATIVO DECREMENTADO: '.($amount - $commissionSub));
-                        return $amount;
+                        $amount = ($amount - $commissionSub); /// atualiza o valor dos ganhos do jogador
                     }
-                    return $amount;
                 }
-                return $amount;
             }
-            return $amount;
         }
-        return $amount;
+
+        /// pagando o premio
+        if (!$user->is_demo_agent) {
+            if(floatval($amount) > 0) {
+                /// atualiza os ganhos da vitoria
+                self::payWithRollover($wallet, $changeBonus, $amount); /// verifica o rollover
+            }
+        }
+
+        return Order::create([
+            'user_id' => $user->id,
+            'session_id' => Str::random(20),
+            'transaction_id' => Str::random(40),
+            'type' => $type,
+            'type_money' => $changeBonus,
+            'amount' => $type == 'loss' ? $bet : $amount,
+            'providers' => $provider,
+            'game' => $nameGame,
+            'game_uuid' => $gameId,
+            'round_id' => 0,
+        ]);
     }
 
     /**
@@ -786,7 +657,6 @@ class Core
                 'initial_bonus',
                 'suitpay_is_enable',
                 'stripe_is_enable',
-                'disable_spin',
             )->first();
 
             Cache::put('setting', $setting);
@@ -874,11 +744,11 @@ class Core
         }
 
         if ($settings->currency_position == 'left') {
-            $amount = ($settings->prefix ?? 'R$').number_format(floatval($value), 2, $decimalDot, $decimalComma);
+            $amount = $settings->prefix.number_format($value, 2, $decimalDot, $decimalComma);
         } elseif ($settings->currency_position == 'right') {
-            $amount = number_format(floatval($value), 2, $decimalDot, $decimalComma).($settings->prefix ?? 'R$');
+            $amount = number_format($value, 2, $decimalDot, $decimalComma).$settings->prefix;
         } else {
-            $amount = $settings->prefix.number_format(floatval($value), 2, $decimalDot, $decimalComma);
+            $amount = $settings->prefix.number_format($value, 2, $decimalDot, $decimalComma);
         }
 
         return $amount;
@@ -1184,7 +1054,6 @@ class Core
     public static function porcentagem_xn( $porcentagem, $total )
     {
         return ( $porcentagem / 100 ) * $total;
-
     }
 
     /**

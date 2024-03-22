@@ -2,20 +2,19 @@
 
 namespace App\Console\Commands\Games;
 
-use App\Traits\Commands\Games\FiversGamesCommandTrait;
-use App\Traits\Commands\Games\WorldSlotGamesCommandTrait;
+use App\Traits\Commands\Games\WorldslotGamesCommandTrait;
 use Illuminate\Console\Command;
 
-class WorldSlotGamesList extends Command
+class WorldslotGamesList extends Command
 {
-    use WorldSlotGamesCommandTrait;
+    use WorldslotGamesCommandTrait;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'worldslot:games';
+    protected $signature = 'worldslot:games-list';
 
     /**
      * The console command description.

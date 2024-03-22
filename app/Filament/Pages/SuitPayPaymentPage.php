@@ -13,7 +13,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Illuminate\Database\Eloquent\Model;
 
 class SuitPayPaymentPage extends Page
 {
@@ -30,15 +29,6 @@ class SuitPayPaymentPage extends Page
     protected static ?string $title = 'SuitPay Pagamentos';
 
     protected static ?string $slug = 'suitpay-pagamentos';
-
-    /**
-     * @dev @victormsalatiel
-     * @return bool
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public ?array $data = [];
     public SuitPayPayment $suitPayPayment;
@@ -107,15 +97,6 @@ class SuitPayPaymentPage extends Page
      */
     public function submit(): void
     {
-        if(env('APP_DEMO')) {
-            Notification::make()
-                ->title('Atenção')
-                ->body('Você não pode realizar está alteração na versão demo')
-                ->danger()
-                ->send();
-            return;
-        }
-
         $suitpayment = SuitPayPayment::create([
             'user_id'       => $this->data['user_id'],
             'pix_key'       => $this->data['pix_key'],

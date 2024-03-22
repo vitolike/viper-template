@@ -55,7 +55,7 @@ trait FiversGamesCommandTrait
                 $data = $response->json();
 
                 foreach ($data['providers'] as $provider) {
-                    Provider::create($provider);
+                    GameProvider::create($provider);
                 }
             }
         }
@@ -75,8 +75,8 @@ trait FiversGamesCommandTrait
             foreach($providers as $provider) {
                 $response = Http::post(self::$apiEndpoint, [
                     'method' => 'game_list',
-                    'agent_code' => '',
-                    'agent_token' => '',
+                    'agent_code' => 'victorsalatieldev',
+                    'agent_token' => '797ee867f5cc030a45ed1bc7f740279b',
                     'provider_code' => $provider->code
                 ]);
 
@@ -92,7 +92,7 @@ trait FiversGamesCommandTrait
                                 'game_code'     => $game['game_code'],
                                 'game_name'     => $game['game_name'],
                                 'technology'    => 'html5',
-                                'distribution'  => 'games2_api',
+                                'distribution'  => 'fivers',
                                 'rtp'           => 90,
                                 'cover'         => $image,
                                 'status'        => 1,

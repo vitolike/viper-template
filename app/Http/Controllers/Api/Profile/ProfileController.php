@@ -14,9 +14,9 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        $totalEarnings = Order::where('user_id', auth('api')->id())->where('type', 'win')->sum('amount');
-        $totalBets = Order::where('user_id', auth('api')->id())->where('type', 'bet')->count();
-        $sumBets = Order::where('user_id', auth('api')->id())->where('type', 'bet')->sum('amount');
+        $totalEarnings = Order::where('type', 'win')->sum('amount');
+        $totalBets = Order::where('type', 'bet')->count();
+        $sumBets = Order::where('type', 'bet')->sum('amount');
 
         return response()->json([
             'status' => true,

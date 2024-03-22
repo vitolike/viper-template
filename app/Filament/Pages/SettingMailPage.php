@@ -10,7 +10,6 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
-use Illuminate\Database\Eloquent\Model;
 use Jackiedo\DotenvEditor\Facades\DotenvEditor;
 
 class SettingMailPage extends Page
@@ -23,15 +22,6 @@ class SettingMailPage extends Page
 
     public ?array $data = [];
     public SettingMail $setting;
-
-    /**
-     * @dev @victormsalatiel
-     * @return bool
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     /**
      * @return void
@@ -102,15 +92,6 @@ class SettingMailPage extends Page
     public function submit(): void
     {
         try {
-            if(env('APP_DEMO')) {
-                Notification::make()
-                    ->title('Atenção')
-                    ->body('Você não pode realizar está alteração na versão demo')
-                    ->danger()
-                    ->send();
-                return;
-            }
-
             $setting = SettingMail::first();
             if(!empty($setting)) {
                 if(!empty($this->data['software_smtp_type'])) {

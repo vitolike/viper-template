@@ -79,8 +79,8 @@ class DashboardAdmin extends \Filament\Pages\Dashboard
             LatestAdminComissions::class,
             WalletOverview::class,
             StatsOverview::class,
-            //GGROverview::class,
-            //GgrTableWidget::class,
+            GGROverview::class,
+            GgrTableWidget::class,
         ];
     }
 }

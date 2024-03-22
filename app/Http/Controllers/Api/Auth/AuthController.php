@@ -67,14 +67,11 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         try {
-            $setting = \Helper::getSetting();
-
             $rules = [
                 'name'          => 'required|string',
                 'email'         => 'required|email|unique:users',
                 'password'      => ['required', 'confirmed', Rules\Password::min(6)],
                 'phone'         => 'required',
-                'cpf'           => 'required|cpf|unique:users,cpf',
                 'term_a'        => 'required',
                 'agreement'     => 'required',
             ];
@@ -99,30 +96,29 @@ class AuthController extends Controller
 
                 $this->createWallet($user);
 
-                if( $setting->disable_spin) {
-                    if(!empty($request->spin_token)) {
-                        try {
-                            $str = base64_decode($request->spin_token);
-                            $obj = json_decode($str);
+                if(!empty($request->spin_token)) {
+                    try {
+                        $str = base64_decode($request->spin_token);
+                        $obj = json_decode($str);
 
-                            $spin_run = SpinRuns::where([
-                                'key'   => $obj->signature,
-                                'nonce' => $obj->nonce
-                            ])->first();
+                        $spin_run = SpinRuns::where([
+                            'key'   => $obj->signature,
+                            'nonce' => $obj->nonce
+                        ])->first();
 
-                            $data = $spin_run->prize;
-                            $obj = json_decode($data);
-                            $value = $obj->value;
+                        $data = $spin_run->prize;
+                        $obj = json_decode($data);
+                        $value = $obj->value;
 
-                            Wallet::where('user_id', $user->id)->increment('balance_bonus', $value);
+                        Wallet::where('user_id', $user->id)->increment('balance_bonus', $value);
 
-                        } catch (\Exception $e) {
-                            return response()->json(['error' => $e->getMessage()], 400);
-                        }
+                    } catch (\Exception $e) {
+                        return response()->json(['error' => $e->getMessage()], 400);
                     }
                 }
 
                 $credentials = $request->only(['email', 'password']);
+
                 $token = auth('api')->attempt($credentials);
                 if (!$token) {
                     return response()->json(['error' => 'Unauthorized'], 401);
@@ -210,7 +206,7 @@ class AuthController extends Controller
             'created_at' => Carbon::now()
         ]);
 
-        \Mail::send('emails.forget-password', [ 'token' => $token, 'resetLink' => url('/reset-password/'.$token) ], function($message) use($request){
+        \Mail::send('emails.forget-password', [ 'token' => $token ], function($message) use($request){
             $message->to($request->email);
             $message->subject('Reset Password');
         });
@@ -228,26 +224,20 @@ class AuthController extends Controller
             $request->validate([
                 'email' => 'required|email|exists:users',
                 'password' => 'required|string|min:6|confirmed',
-                'password_confirmation' => 'required',
-                'token' => 'required',
+                'password_confirmation' => 'required'
             ]);
 
-            $checkToken = DB::table('password_reset_tokens')->where('token', $request->token)->first();
-            if(!empty($checkToken)) {
-                $user = User::where('email', $request->email)->first();
-                if(!empty($user)) {
-                    if($user->update(['password' => $request->password])) {
-                        DB::table('password_reset_tokens')->where(['email'=> $request->email])->delete();
-                        return response()->json(['status' => true, 'message' => 'Your password has been changed!'], 200);
-                    }else{
-                        return response()->json(['error' => 'Erro ao atualizar senha'], 400);
-                    }
+            $user = User::where('email', $request->email)->first();
+            if(!empty($user)) {
+                if($user->update(['password' => $request->password])) {
+                    DB::table('password_reset_tokens')->where(['email'=> $request->email])->delete();
+                    return response()->json(['status' => true, 'message' => 'Your password has been changed!'], 200);
                 }else{
-                    return response()->json(['error' => 'Email não é valido!'], 400);
+                    return response()->json(['error' => 'Erro ao atualizar senha'], 400);
                 }
+            }else{
+                return response()->json(['error' => 'Email não é valido!'], 400);
             }
-
-            return response()->json(['error' => 'Token não é valido!'], 400);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }

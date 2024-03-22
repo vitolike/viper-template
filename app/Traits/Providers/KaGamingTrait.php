@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Http;
 
 trait KaGamingTrait
 {
-    protected static $KAGAMING_PARTNER_NAME  = '';
-    protected static $KAGAMING_ACCESS_KEY    = '';
-    protected static $KAGAMING_SECRET_KEY    = ''; // Chave secreta compartilhada entre o licenciado e RMP
+    protected static $KAGAMING_PARTNER_NAME  = 'VALEBETSPORTS';
+    protected static $KAGAMING_ACCESS_KEY    = '9381857B5690063F90E3748D0FC8BE2D';
+    protected static $KAGAMING_SECRET_KEY    = 'F13253E0C70CC4C6642213412587626E'; // Chave secreta compartilhada entre o licenciado e RMP
     protected static $URI                    = 'https://rmpstage.kaga88.com/kaga/';
 
     /**
@@ -20,6 +20,7 @@ trait KaGamingTrait
     {
         return hash_hmac('sha256', json_encode($requestData), self::$KAGAMING_SECRET_KEY);
     }
+
 
     /**
      * Game Launch

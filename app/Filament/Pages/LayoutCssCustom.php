@@ -15,7 +15,6 @@ use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 use Filament\Notifications\Notification;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Jackiedo\DotenvEditor\Facades\DotenvEditor;
@@ -41,15 +40,6 @@ class LayoutCssCustom extends Page implements HasForms
 
     public ?array $data = [];
     public CustomLayout $custom;
-
-    /**
-     * @dev @victormsalatiel
-     * @return bool
-     */
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     /**
      * @return void
@@ -78,60 +68,6 @@ class LayoutCssCustom extends Page implements HasForms
     {
         return $form
             ->schema([
-                Section::make()
-                    ->label('Background')
-                    ->schema([
-                        ColorPicker::make('background_base')
-                            ->label('Background Principal')
-                            ->required(),
-                        ColorPicker::make('background_base_dark')
-                            ->label('Background Principal (Dark)')
-                            ->required(),
-                        ColorPicker::make('carousel_banners')
-                            ->label('Carousel Banners')
-                            ->required(),
-                        ColorPicker::make('carousel_banners_dark')
-                            ->label('Carousel Banners (Dark)')
-                            ->required(),
-                    ])->columns(4)
-                ,
-                Section::make()
-                    ->label('Sidebar & Navbar & Footer')
-                    ->schema([
-                        ColorPicker::make('sidebar_color')
-                            ->label('Sidebar')
-                            ->required(),
-
-                        ColorPicker::make('sidebar_color_dark')
-                            ->label('Sidebar (Dark)')
-                            ->required(),
-
-                        ColorPicker::make('navtop_color')
-                            ->label('Navtop')
-                            ->required(),
-
-                        ColorPicker::make('navtop_color_dark')
-                            ->label('Navtop (Dark)')
-                            ->required(),
-
-                        ColorPicker::make('side_menu')
-                            ->label('Side Menu Box')
-                            ->required(),
-
-                        ColorPicker::make('side_menu_dark')
-                            ->label('Side Menu Box (Dark)')
-                            ->required(),
-
-                        ColorPicker::make('footer_color')
-                            ->label('Footer Color')
-                            ->required(),
-
-                        ColorPicker::make('footer_color_dark')
-                            ->label('Footer Color (Dark)')
-                            ->required(),
-                    ])->columns(4)
-                ,
-
                 Section::make('Customização')
                     ->schema([
                         ColorPicker::make('primary_color')
@@ -140,21 +76,6 @@ class LayoutCssCustom extends Page implements HasForms
                         ColorPicker::make('primary_opacity_color')
                             ->label('Primary Opacity Color')
                             ->required(),
-
-                        ColorPicker::make('input_primary')
-                            ->label('Input Primary')
-                            ->required(),
-                        ColorPicker::make('input_primary_dark')
-                            ->label('Input Primary (Dark)')
-                            ->required(),
-
-                        ColorPicker::make('card_color')
-                            ->label('Card Primary')
-                            ->required(),
-                        ColorPicker::make('card_color_dark')
-                            ->label('Card Primary (Dark)')
-                            ->required(),
-
                         ColorPicker::make('secundary_color')
                             ->label('Secundary Color')
                             ->required(),
@@ -211,15 +132,6 @@ class LayoutCssCustom extends Page implements HasForms
     public function submit(): void
     {
         try {
-            if(env('APP_DEMO')) {
-                Notification::make()
-                    ->title('Atenção')
-                    ->body('Você não pode realizar está alteração na versão demo')
-                    ->danger()
-                    ->send();
-                return;
-            }
-
             $custom = CustomLayout::first();
 
             if(!empty($custom)) {
